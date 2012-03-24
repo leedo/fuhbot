@@ -14,7 +14,21 @@ package Fuckbot::IRC 0.1 {
 
   sub setup_events {
     my $self = shift;
+    $self->{reconnect_cb} = sub {$self->reconnect};
     $self->reg_cb(registered => sub { $self->join_channels });
+    $self->reg_cb(disconnect => sub { $self->{reconnect_cb} });
+  }
+
+  sub shutdown {
+    my ($self, $cb) = @_;
+    $self->unreg_cb($self->{reconnect_cb});
+    $self->reg_cb(disconnect => $cb);
+    $self->send_srv(QUIT => "fuckbot");
+  }
+
+  sub reconnect {
+    my ($self, $reason) = @_;
+    warn $reason;
   }
 
   sub config {

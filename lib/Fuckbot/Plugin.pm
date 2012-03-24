@@ -9,6 +9,8 @@ package Fuckbot::Plugin 0.1 {
     }, $class;
   }
 
+  sub prepare_plugin {}
+
   sub config {
     my ($self, $key) = @_;
     if ($key) {

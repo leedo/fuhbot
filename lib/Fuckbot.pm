@@ -42,8 +42,7 @@ package Fuckbot 0.1 {
 
     for my $irc (grep {$_->is_connected} $self->ircs) {
       $cv->begin;
-      $irc->reg_cb(disconnect => sub { $cv->end });
-      $irc->send_srv(QUIT => "fuckbot");
+      $irc->shutdown(sub { $cv->end });
     }
 
     for my $plugin ($self->plugins) {
@@ -52,7 +51,7 @@ package Fuckbot 0.1 {
     }
 
     my $t = AE::timer 5, 0, sub {
-      $cv->croak("timeout shutting down plugins");
+      $cv->croak("timed out shutting down plugins");
     };
 
     $cv->recv;
