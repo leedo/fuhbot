@@ -55,7 +55,7 @@ package Fuckbot::IRC 0.1 {
     );
 
     # this timer gets canceled connect succeeds
-    $self->reconnect_timer; 
+    $self->reconnect; 
   }
 
   sub join_channels {
