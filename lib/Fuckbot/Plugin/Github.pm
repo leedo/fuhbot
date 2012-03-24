@@ -3,6 +3,7 @@ use v5.14;
 package Fuckbot::Plugin::Github 0.1 {
   use parent 'Fuckbot::Plugin';
   use AnyEvent::HTTPD;
+  use JSON::XS;
 
   sub prepare_plugin {
     my $self = shift;
@@ -13,11 +14,19 @@ package Fuckbot::Plugin::Github 0.1 {
 
   sub handle_req {
     my ($self, $httpd, $req) = @_;
-    $req->respond({ content => ["text/plain", "hai"] });
-  }
 
-  sub irc_privmsg {
-    my ($self, $irc, $msg) = @_;
+    $req->respond({ content => ["text/plain", "o ok"] });
+    my $payload = $req->param("payload");
+
+    if ($payload) {
+      my $data = decode_json $payload;
+      my $repo = $data->{repository}{name};
+      my @commits = map {
+        "$_->{author}{name} - $_->{message} ($_->{url})"
+      } @{$data->{commits}};
+
+      $self->broadcast(@commits);
+    }
   }
 }
 

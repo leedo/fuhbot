@@ -42,6 +42,14 @@ package Fuckbot::IRC 0.1 {
       $self->send_srv(JOIN => $channel);
     }
   }
+
+  sub broadcast {
+    my ($self, $msg) = @_;
+    my $channels = $self->channel_list;
+    for my $channel (keys %$channels) {
+      $self->send_srv(PRIVMSG => $channel, $msg);
+    }
+  }
 }
 
 1;

@@ -2,8 +2,11 @@ use v5.14;
 
 package Fuckbot::Plugin 0.1 {
   sub new {
-    my ($class, $config) = @_;
-    bless {config => $config}, $class;
+    my ($class, $config, $broadcast) = @_;
+    bless {
+      config => $config,
+      broadcast => $broadcast,
+    }, $class;
   }
 
   sub config {
@@ -12,6 +15,13 @@ package Fuckbot::Plugin 0.1 {
       return $self->{config}{$key};
     }
     return $self->{config};
+  }
+
+  sub broadcast {
+    my ($self, @msgs) = @_;
+    if (@msgs) {
+      $self->{broadcast}->($_) for @msgs;
+    }
   }
 
   sub shutdown {

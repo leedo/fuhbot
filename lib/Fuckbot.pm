@@ -58,6 +58,13 @@ package Fuckbot 0.1 {
     $cv->recv;
   }
 
+  sub broadcast {
+    my ($self, $msg) = @_;
+    for my $irc ($self->ircs) {
+      $irc->broadcast($msg);
+    }
+  }
+
   sub load_ircs {
     my $self = shift;
     for my $config (@{$self->config("ircs")}) {
@@ -70,11 +77,12 @@ package Fuckbot 0.1 {
 
   sub load_plugins {
     my $self = shift;
+    my $broadcast = sub { $self->broadcast(@_) };
     for my $config (@{$self->config("plugins")}) {
       my $class = "Fuckbot::Plugin::$config->{name}";
       my ($success, $error) = Class::Load::try_load_class($class);
       if ($success) {
-        my $plugin = $class->new($config);
+        my $plugin = $class->new($config, $broadcast);
         $plugin->prepare_plugin;
         push $self->{plugins}, $plugin;
       }
