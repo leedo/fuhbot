@@ -22,7 +22,7 @@ package Fuckbot::Plugin::Github 0.1 {
       my $data = decode_json $payload;
       my $repo = $data->{repository}{name};
       my @commits = map {
-        "$_->{author}{name} - $_->{message} ($_->{url})"
+        "[$repo] $_->{message} ($_->{author}{name}) $_->{url}"
       } @{$data->{commits}};
 
       $self->broadcast(@commits);
