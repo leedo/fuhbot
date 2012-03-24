@@ -12,7 +12,7 @@ package Fuckbot::Plugin::Insult 0.1 {
     my ($dest, $text) = @{$msg->{params}};
     my $nick = $irc->nick;
 
-    if ($text =~ /^$nick:?\s*insult\s+(\S+)/) {
+    if ($text =~ /^\Q$nick\E[:,\s]+insult\s+(\S+)/) {
       my $nick = $1;
       my $insult = (List::Util::shuffle @INSULTS)[0];
       $irc->send_srv(PRIVMSG => $dest, "hey $nick, $insult");
