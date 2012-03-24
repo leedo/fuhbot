@@ -1,8 +1,7 @@
 use v5.14;
-use AnyEvent;
-use common::sense;
 
 package Fuckbot 0.1 {
+  use AnyEvent;
   use Class::Load;
   use Fuckbot::IRC;
 
@@ -10,10 +9,10 @@ package Fuckbot 0.1 {
     my ($class, @argv) = @_;
     die "config must passed in as the first arg" unless @argv;
     bless {
-      config_file => $argv[0],
-      ircs => [],
+      ircs    => [],
       plugins => [],
-      config => {},
+      config  => {},
+      config_file => $argv[0],
     }, $class;
   }
 
