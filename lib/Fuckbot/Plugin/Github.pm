@@ -16,7 +16,7 @@ package Fuckbot::Plugin::Github 0.1 {
     my ($self, $httpd, $req) = @_;
 
     $req->respond({ content => ["text/plain", "o ok"] });
-    my $payload = $req->param("payload");
+    my $payload = $req->parm("payload");
 
     if ($payload) {
       my $data = decode_json $payload;
