@@ -16,6 +16,7 @@ package Fuckbot::IRC 0.1 {
     my $self = shift;
     $self->{reconnect_cb} = sub {$self->reconnect};
     $self->reg_cb(registered => sub { $self->join_channels });
+    $self->reg_cb(registered => sub { delete $self->{reconnect_timer} });
     $self->reg_cb(disconnect => sub { $self->{reconnect_cb} });
   }
 
@@ -28,7 +29,9 @@ package Fuckbot::IRC 0.1 {
 
   sub reconnect {
     my ($self, $reason) = @_;
-    warn $reason;
+    $self->{reconnect_timer} = AE::timer 5, 0, sub {
+      $self->connect;
+    }
   }
 
   sub config {
@@ -43,11 +46,16 @@ package Fuckbot::IRC 0.1 {
   sub connect {
     my $self = shift;
     $self->enable_ssl if $self->config("ssl");
+    $self->disconnect;
+
     $self->SUPER::connect(
       $self->config("host"),
       $self->config("port"),
       $self->config,
     );
+
+    # this timer gets canceled connect succeeds
+    $self->reconnect_timer; 
   }
 
   sub join_channels {
