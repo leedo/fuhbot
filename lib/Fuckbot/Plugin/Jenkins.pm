@@ -15,12 +15,14 @@ package Fuckbot::Plugin::Jenkins 0.1 {
   sub handle_req {
     my ($self, $httpd, $req) = @_;
 
-    $self->respond({ content => ["text/plain", "o ok"] });
-    my $payload = $req->parm("payload");
+    $req->respond({ content => ["text/plain", "o ok"] });
+    my ($payload) = $req->vars; # wut
 
     if ($payload) {
       my $data = decode_json $payload;
-      $self->broadcast("build #$data{number} of job has $build{phase} $build{status}");
+      my $build = $data->{build};
+      my $name = $data->{name};
+      $self->broadcast("build #$build->{number} of $name has $build->{phase} $build->{status}");
     }
   }
 }
