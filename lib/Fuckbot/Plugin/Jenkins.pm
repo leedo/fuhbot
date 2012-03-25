@@ -23,7 +23,8 @@ package Fuckbot::Plugin::Jenkins 0.1 {
       my $data = decode_json $payload;
       my $build = $data->{build};
       my $name = $data->{name};
-      Fuckbot::ShortURL::shorten "http://75.102.3.18:8080/$build->{url}", sub {
+      my $prefix = $self->config("url");
+      Fuckbot::ShortURL::shorten "$prefix/$build->{url}", sub {
         my $url = shift;
         $self->broadcast("build #$build->{number} of $name has $build->{phase} $build->{status} - $url");
       };

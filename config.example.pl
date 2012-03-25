@@ -3,7 +3,15 @@
     {
       name => "Github",
       port => 9091,
-    }
+    },
+    {
+      name => "Jenkins",
+      port => 9091,
+      url  => "http://localhost/",
+    },
+    {
+      name => "Insult",
+    },
   ],
   ircs => [
     {
