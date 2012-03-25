@@ -2,6 +2,7 @@ use v5.14;
 
 package Fuckbot::Plugin::Github 0.1 {
   use parent 'Fuckbot::Plugin';
+  use Fuckbot::ShortURL;
   use Fuckbot::HTTPD;
   use JSON::XS;
 
@@ -21,11 +22,13 @@ package Fuckbot::Plugin::Github 0.1 {
     if ($payload) {
       my $data = decode_json $payload;
       my $repo = $data->{repository}{name};
-      my @commits = map {
-        "[$repo] $_->{message} ($_->{author}{name}) $_->{url}"
-      } @{$data->{commits}};
 
-      $self->broadcast(@commits);
+      for my $commit (@{$data->{commits}}) {
+        Fuckbot::ShortURL::shorten $commit->{url}, sub {
+          my $url = shift;
+          $self->broadcast("[$repo] $commit->{message} ($commit->{author}{name}) - $url");
+        };
+      }
     }
   }
 }

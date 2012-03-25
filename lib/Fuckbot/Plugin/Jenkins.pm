@@ -2,6 +2,7 @@ use v5.14;
 
 package Fuckbot::Plugin::Jenkins 0.1 {
   use parent 'Fuckbot::Plugin';
+  use Fuckbot::ShortURL;
   use Fuckbot::HTTPD;
   use JSON::XS;
   
@@ -22,7 +23,10 @@ package Fuckbot::Plugin::Jenkins 0.1 {
       my $data = decode_json $payload;
       my $build = $data->{build};
       my $name = $data->{name};
-      $self->broadcast("build #$build->{number} of $name has $build->{phase} $build->{status}");
+      Fuckbot::ShortURL::shorten "http://75.102.3.18:8080/$build->{url}", sub {
+        my $url = shift;
+        $self->broadcast("build #$build->{number} of $name has $build->{phase} $build->{status} - $url");
+      };
     }
   }
 }
