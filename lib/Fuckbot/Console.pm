@@ -4,18 +4,11 @@ package Fuckbot::Console 0.1 {
   use AnyEvent::Debug;
   use Cwd;
 
-  my $guard;
+  my $sock = getcwd . "/fuckbot.sock";
+  unlink $sock if -e $sock;
+  AnyEvent::Debug::shell "unix/", $sock;
 
-  sub import {
-    my $sock = getcwd . "/fuckbot.sock";
-    unlink $sock if -e $sock;
-    AnyEvent::Debug::shell "unix/", $sock;
-    $guard = bless [$sock], "Fuckbot::Console";
-  }
-
-  sub DESTROY {
-    unlink $guard->[0];
-  }
+  END { unlink $sock }
 }
 
 1;
