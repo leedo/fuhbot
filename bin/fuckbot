@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 
 use Fuckbot;
-Fuckbot->new(@ARGV)->run;
+use Fuckbot::Console;
 
+(our $fuckbot = Fuckbot->new(@ARGV))->run;
