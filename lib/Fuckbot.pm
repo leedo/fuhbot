@@ -2,7 +2,6 @@ use v5.14;
 
 package Fuckbot 0.1 {
   use AnyEvent;
-  use Class::Load;
   use Fuckbot::IRC;
 
   sub new {
@@ -64,6 +63,13 @@ package Fuckbot 0.1 {
     }
   }
 
+  sub broadcast_cb {
+    my $self = shift;
+    return sub {
+      $self->broadcast(@_);
+    }
+  }
+
   sub load_ircs {
     my $self = shift;
     for my $config (@{$self->config("ircs")}) {
@@ -76,18 +82,36 @@ package Fuckbot 0.1 {
 
   sub load_plugins {
     my $self = shift;
-    my $broadcast = sub { $self->broadcast(@_) };
     for my $config (@{$self->config("plugins")}) {
-      my $class = "Fuckbot::Plugin::$config->{name}";
-      my ($success, $error) = Class::Load::try_load_class($class);
-      if ($success) {
-        my $plugin = $class->new($config, $broadcast);
-        $plugin->prepare_plugin;
-        push $self->{plugins}, $plugin;
-      }
-      else {
-        die "error loading $config->{name} plugin\n  $error";
-      }
+      $self->load_plugin($config);
+    }
+  }
+
+  sub load_plugin {
+    my ($self, $config) = @_;
+
+    my $class = "Fuckbot::Plugin::$config->{name}";
+    eval "use $class";
+    die $@ if $@;
+    
+    my $plugin = $class->new($config, $self->broadcast_cb);
+    $plugin->prepare_plugin;
+    push $self->{plugins}, $plugin;
+  }
+
+  sub reload_plugin {
+    my ($self, $name) = @_;
+    delete $INC{"Fuckbot/Plugin/$name.pm"};
+
+    my $orig = [ $self->plugins ];
+    $self->{plugins} = [grep {$_->config("name") ne $name} $self->plugins];
+
+    my @configs = grep {$_->{name} eq $name} @{$self->config("plugins")};
+    eval { $self->load_plugin($_) for @configs };
+
+    if ($@) {
+      die "error reloading $name plugin: $@";
+      $self->{plugins} = $orig;
     }
   }
 
