@@ -2,21 +2,26 @@ use v5.14;
 
 package Fuckbot::Plugin::Insult 0.1 {
   use parent 'Fuckbot::Plugin';
-  use List::Util;
 
-  our @INSULTS = ("fuck you", "eat shit");
+  sub commands {
+    my $self = shift;
+    ( ["insult" => sub { $self->insult(@_) }],
+      ["add insult" => sub { $self->add_insult(@_) }],
+    );
+  }
 
-  sub irc_privmsg {
-    my ($self, $irc, $msg) = @_;
+  sub insult {
+    my ($self, $irc, $chan, $nick) = @_;
+    $self->brain->srandmember("insults", sub {
+      my $insult = shift;
+      $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
+    });
+  }
 
-    my ($dest, $text) = @{$msg->{params}};
-    my $nick = $irc->nick;
-
-    if ($text =~ /^\Q$nick\E[:,\s]+insult\s+(\S+)/) {
-      my $nick = $1;
-      my $insult = (List::Util::shuffle @INSULTS)[0];
-      $irc->send_srv(PRIVMSG => $dest, "hey $nick, $insult");
-    }
+  sub add_insult {
+    my ($self, $irc, $chan, $insult) = @_;
+    $self->brain->sadd("insults", $insult);
+    $irc->send_srv(PRIVMSG => $chan, "ok!");
   }
 }
 

@@ -2,18 +2,20 @@ use v5.14;
 
 package Fuckbot::Plugin 0.1 {
   sub new {
-    my ($class, $config, $broadcast) = @_;
-    bless {
-      config => $config,
-      broadcast => $broadcast,
-    }, $class;
+    my $class = shift;
+    bless {@_}, $class;
   }
 
   sub prepare_plugin {}
+  sub commands {()}
 
   sub name {
     my $self = shift;
     return $self->config("name");
+  }
+
+  sub brain {
+    return $_[0]->{brain};
   }
 
   sub config {

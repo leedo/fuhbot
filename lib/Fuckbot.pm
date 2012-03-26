@@ -3,14 +3,16 @@ use v5.14;
 package Fuckbot 0.1 {
   use AnyEvent;
   use Fuckbot::IRC;
+  use Fuckbot::Brain;
 
   sub new {
     my ($class, @argv) = @_;
     die "config must passed in as the first arg" unless @argv;
     bless {
-      ircs    => [],
-      plugins => [],
-      config  => {},
+      ircs     => [],
+      plugins  => [],
+      config   => {},
+      brain    => Fuckbot::Brain->new,
       config_file => $argv[0],
     }, $class;
   }
@@ -65,9 +67,7 @@ package Fuckbot 0.1 {
 
   sub broadcast_cb {
     my $self = shift;
-    return sub {
-      $self->broadcast(@_);
-    }
+    $self->{broadcast_cb} ||= sub {$self->broadcast(@_)};
   }
 
   sub load_ircs {
@@ -75,6 +75,7 @@ package Fuckbot 0.1 {
     for my $config (@{$self->config("ircs")}) {
       my $irc = Fuckbot::IRC->new($config);
       $irc->reg_cb("irc_*" => sub { $self->irc_line(@_) });
+      $irc->reg_cb("publicmsg" => sub { $self->handle_command(@_) });
       $irc->connect;
       push $self->{ircs}, $irc;
     }
@@ -94,7 +95,12 @@ package Fuckbot 0.1 {
     eval "use $class";
     die $@ if $@;
     
-    my $plugin = $class->new($config, $self->broadcast_cb);
+    my $plugin = $class->new(
+      config    => $config,
+      brain     => $self->{brain},
+      broadcast => $self->broadcast_cb,
+    );
+
     $plugin->prepare_plugin;
     push $self->{plugins}, $plugin;
   }
@@ -122,6 +128,26 @@ package Fuckbot 0.1 {
     for my $plugin ($self->plugins) {
       $plugin->$method($irc, $msg) if $plugin->can($method);
     }
+  }
+
+  sub handle_command {
+    my ($self, $irc, $chan, $msg) = @_;
+    my $text = $msg->{params}[-1];
+    my $nick = $irc->nick;
+
+    if ($text =~ s/^\Q$nick\E[:,\s]+//) {
+      for my $command ($self->commands) {
+        my ($pattern, $cb) = @{$command};
+        if ($text =~ s/^$pattern//) {
+          $cb->($irc, $chan, $text);
+        }
+      }
+    }
+  }
+
+  sub commands {
+    my $self = shift;
+    return map {$_->commands} $self->plugins;
   }
 
   sub load_config {
