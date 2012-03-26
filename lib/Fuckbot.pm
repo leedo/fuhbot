@@ -143,9 +143,8 @@ package Fuckbot 0.1 {
           return;
         }
       }
+      $irc->send_srv(PRIVMSG => $chan, "huh?");
     }
-
-    $irc->send_srv(PRIVMSG => $chan, "huh?");
   }
 
   sub commands {
