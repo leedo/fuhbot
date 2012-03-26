@@ -140,9 +140,12 @@ package Fuckbot 0.1 {
         my ($pattern, $cb) = @{$command};
         if ($text =~ s/^$pattern\s*//) {
           $cb->($irc, $chan, $text);
+          return;
         }
       }
     }
+
+    $irc->send_srv(PRIVMSG => $chan, "huh?");
   }
 
   sub commands {
