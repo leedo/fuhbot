@@ -104,3 +104,10 @@ perl
 freenode
 ars
 </pre>
+
+The console is also useful for reloading plugins. This statement
+will reload the Insult plugin.
+
+<pre>
+> $::fuckbot->reload_plugin("Insult")
+</pre>
