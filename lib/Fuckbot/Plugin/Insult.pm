@@ -14,6 +14,8 @@ package Fuckbot::Plugin::Insult 0.1 {
     my ($self, $irc, $chan, $nick) = @_;
     $self->brain->srandmember("insults", sub {
       my $insult = shift;
+      $nick =~ s/^\s+//;
+      $nick =~ s/\s+$//;
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
     });
   }

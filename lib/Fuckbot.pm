@@ -138,7 +138,7 @@ package Fuckbot 0.1 {
     if ($text =~ s/^\Q$nick\E[:,\s]+//) {
       for my $command ($self->commands) {
         my ($pattern, $cb) = @{$command};
-        if ($text =~ s/^$pattern//) {
+        if ($text =~ s/^$pattern\s*//) {
           $cb->($irc, $chan, $text);
         }
       }
