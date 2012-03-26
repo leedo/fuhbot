@@ -1,5 +1,4 @@
-fuckbot
-=======
+# fuckbot
 
 <pre>perl -Ilib bin/fuckbot config.pl</pre>
 
@@ -7,8 +6,7 @@ fuckbot is a simple IRC bot with a administrative console and plugin
 system.  Plugins have access to IRC events and can broadcast messages
 to all channels.
 
-config
-------
+## config
 
 The config file is perl. The last statement must return a hash
 reference.  This hash should contain a `plugins` key with a list
@@ -33,12 +31,13 @@ This is a very simple config that loads the `Insult` plugin.
 </pre>
 
 
-plugins
--------
+## plugins
 
 Plugins should inherit from `Fuckbot::Plugin`, and can use the
 `prepare_plugin` method to setup any attributes when the bot is
 started.
+
+### IRC events
 
 Any methods prefixed with `irc_` will be treated as IRC event
 handlers (e.g. `irc_001` responds to the 001 event). The method
@@ -48,6 +47,7 @@ This plugin will broadcast a message whenever a topic is changed.
 
 <pre>
   use v5.14;
+
   package Fuckbot::Plugin::Topic 0.1 {
     use parent "Fuckbot::Plugin";
 
@@ -61,6 +61,41 @@ This plugin will broadcast a message whenever a topic is changed.
   1;
 </pre>
 
+### IRC commands
+
+Plugins can also register command handlers. This simplifies the
+process of parsing commands. To register command handlers, override
+the `commands` method, and return a list of command names and
+callbacks. When a the command matches it will be called, and be
+passed the IRC connection, channel name, and any text after the
+command.
+
+The following plugin responds to the line `fuckbot: insult lee`.
+
+<pre>
+  use v5.14
+
+  package Fuckbot::Plugin::Insult 0.1 {
+    use parent "Fuckbot::Plugin";
+    
+    sub commands {
+      my $self = shift;
+      return (
+        [insult => sub {$self->insult(@_)}],
+      )
+    }
+    
+    sub insult {
+      my ($self, $irc, $chan, $nick) = @_;
+      $irc->send_srv(PRIVMSG => $chan, "fuck $nick");
+    }
+  }
+
+  1;
+</pre>
+
+### HTTP events
+
 Plugins also have access to an HTTP server. This can be useful for
 responding to hooks from services such as Github. This example plugin
 creates an HTTP server and broadcasts a message when `/toot` is
@@ -68,6 +103,7 @@ requested.
 
 <pre>
   use v5.14;
+
   package Fuckbot::Plugin::Toot 0.1 {
     use parent "Fuckbot::Plugin";
     use Fuckbot::HTTPD;
@@ -86,8 +122,7 @@ requested.
   1;
 </pre>
 
-console
--------
+## console
 
 When the bot is started a unix socket is created. Any perl statements
 sent to the socket will be evaluated. `bin/console` provides a
