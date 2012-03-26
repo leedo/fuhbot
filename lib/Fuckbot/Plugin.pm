@@ -11,6 +11,11 @@ package Fuckbot::Plugin 0.1 {
 
   sub prepare_plugin {}
 
+  sub name {
+    my $self = shift;
+    return $self->config("name");
+  }
+
   sub config {
     my ($self, $key) = @_;
     if ($key) {

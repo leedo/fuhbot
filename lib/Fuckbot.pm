@@ -104,14 +104,14 @@ package Fuckbot 0.1 {
     delete $INC{"Fuckbot/Plugin/$name.pm"};
 
     my $orig = [ $self->plugins ];
-    $self->{plugins} = [grep {$_->config("name") ne $name} $self->plugins];
+    $self->{plugins} = [grep {$_->name ne $name} $self->plugins];
 
     my @configs = grep {$_->{name} eq $name} @{$self->config("plugins")};
     eval { $self->load_plugin($_) for @configs };
 
     if ($@) {
-      die "error reloading $name plugin: $@";
       $self->{plugins} = $orig;
+      die "error reloading $name plugin: $@";
     }
   }
 
