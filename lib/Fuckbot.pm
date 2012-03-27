@@ -2,6 +2,7 @@ use v5.14;
 
 package Fuckbot 0.1 {
   use AnyEvent;
+  use AnyEvent::IRC::Util;
   use Fuckbot::IRC;
   use Fuckbot::Brain;
 
@@ -75,7 +76,8 @@ package Fuckbot 0.1 {
     for my $config (@{$self->config("ircs")}) {
       my $irc = Fuckbot::IRC->new($config);
       $irc->reg_cb("irc_*" => sub { $self->irc_line(@_) });
-      $irc->reg_cb("publicmsg" => sub { $self->handle_command(@_) });
+      $irc->reg_cb("publicmsg" => sub { $self->channel_msg(@_) });
+      $irc->reg_cb("privatemsg" => sub { $self->private_msg(@_) });
       $irc->connect;
       push $self->{ircs}, $irc;
     }
@@ -130,21 +132,34 @@ package Fuckbot 0.1 {
     }
   }
 
-  sub handle_command {
+  sub channel_msg {
     my ($self, $irc, $chan, $msg) = @_;
     my $text = $msg->{params}[-1];
     my $nick = $irc->nick;
 
     if ($text =~ s/^\Q$nick\E[:,\s]+//) {
-      for my $command ($self->commands) {
-        my ($pattern, $cb) = @{$command};
-        if ($text =~ s/^$pattern\s*//) {
-          $cb->($irc, $chan, $text);
-          return;
-        }
-      }
-      $irc->send_srv(PRIVMSG => $chan, "huh?");
+      $self->handle_command($irc, $chan, $text);
     }
+  }
+
+  sub private_msg {
+    my ($self, $irc, $nick, $msg) = @_;
+    my $text = $msg->{params}[-1];
+    my $sender = AnyEvent::IRC::Util::prefix_nick $msg->{prefix};
+    $self->handle_command($irc, $sender, $text);
+  }
+
+  sub handle_command {
+    my ($self, $irc, $chan, $text) = @_;
+
+    for my $command ($self->commands) {
+      my ($pattern, $cb) = @{$command};
+      if ($text =~ s/^$pattern\s*//) {
+        $cb->($irc, $chan, $text);
+        return;
+      }
+    }
+    $irc->send_srv(PRIVMSG => $chan, "huh?");
   }
 
   sub commands {
