@@ -12,14 +12,13 @@ package Fuckbot::Plugin::Insult 0.1 {
 
   sub insult {
     my ($self, $irc, $chan, $nick) = @_;
-    $nick ||= $chan;
 
-    $self->brain->srandmember("insults", sub {
-      my $insult = shift;
-      $nick =~ s/^\s+//;
-      $nick =~ s/\s+$//;
-      $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
-    });
+    $nick ||= $chan;
+    $nick =~ s/^\s+//;
+    $nick =~ s/\s+$//;
+
+    my $insult = $self->brain->srandmember("insults");
+    $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
   }
 
   sub add_insult {
