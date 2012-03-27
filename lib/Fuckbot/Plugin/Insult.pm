@@ -3,12 +3,7 @@ use v5.14;
 package Fuckbot::Plugin::Insult 0.1 {
   use parent 'Fuckbot::Plugin';
 
-  sub commands {
-    my $self = shift;
-    ( ["insult" => sub { $self->insult(@_) }],
-      ["add insult" => sub { $self->add_insult(@_) }],
-    );
-  }
+  sub commands {qw/insult add_insult/}
 
   sub insult {
     my ($self, $irc, $chan, $nick) = @_;

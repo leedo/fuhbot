@@ -9,6 +9,26 @@ package Fuckbot::Plugin 0.1 {
   sub prepare_plugin {}
   sub commands {()}
 
+  sub command_callbacks {
+    my $self = shift;
+
+    # build commands list
+    $self->{commands} ||= do {
+      my @commands;
+      for my $command ($self->commands) {
+        if (ref($command) eq "ARRAY") {
+          return $command;
+        }
+        my $method = $command;
+        $command =~ s/_/ /g;
+        push @commands, [$command, sub { $self->$method(@_) }];
+      }
+      [@commands];
+    };
+
+    return @{$self->{commands}};
+  }
+
   sub name {
     my $self = shift;
     return $self->config("name");

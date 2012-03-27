@@ -154,6 +154,7 @@ package Fuckbot 0.1 {
 
     for my $command ($self->commands) {
       my ($pattern, $cb) = @{$command};
+      warn $pattern;
       if ($text =~ s/^$pattern\s*//) {
         $cb->($irc, $chan, $text);
         return;
@@ -164,7 +165,7 @@ package Fuckbot 0.1 {
 
   sub commands {
     my $self = shift;
-    return map {$_->commands} $self->plugins;
+    return map {$_->command_callbacks} $self->plugins;
   }
 
   sub load_config {

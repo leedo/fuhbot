@@ -127,20 +127,21 @@ requested.
 Plugins have a `brain` method that gives access to a Redis client.
 This should be used to save all non-configuration related state.
 
-This plugin saves quotes to a Redis set.
+This plugin implements `quote random` and `quote add` commands.
 
 <pre>
 use v5.14;
 
 package Fuckbot::Plugin::Quote 0.1 {
-  sub commands {
-    my $self = shift;
-    return (
-      [quote => sub {$self->save_quote(@_)}]
-    );
+  sub commands {qw/quote_random quote_add/}
+
+  sub quote_random {
+    my ($self, $irc, $chan, $quote) = @_;
+    $quote = $self->brain->srandmember("quotes");
+    $self->send_srv(PRIVMSG => $chan, $quote);
   }
 
-  sub save_quote {
+  sub quote_add {
     my ($self, $irc, $chan, $quote) = @_;
     $self->brain->sadd("quotes", $quote);
     $irc->send_srv(PRIVMSG => $chan, "saved!");
