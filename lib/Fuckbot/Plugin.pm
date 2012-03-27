@@ -17,11 +17,13 @@ package Fuckbot::Plugin 0.1 {
       my @commands;
       for my $command ($self->commands) {
         if (ref($command) eq "ARRAY") {
-          return $command;
+          push @commands, $command;
         }
-        my $method = $command;
-        $command =~ s/_/ /g;
-        push @commands, [$command, sub { $self->$method(@_) }];
+        else {
+          my $method = $command;
+          $command =~ s/_/ /g;
+          push @commands, [$command, sub { $self->$method(@_) }];
+        }
       }
       [@commands];
     };
