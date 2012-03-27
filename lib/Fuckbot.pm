@@ -137,7 +137,7 @@ package Fuckbot 0.1 {
     my $text = $msg->{params}[-1];
     my $nick = $irc->nick;
 
-    if ($text =~ s/^\Q$nick\E[:,\s]+//) {
+    if ($text =~ s/^(?:!|\Q$nick\E[:,\s]+)//) {
       $self->handle_command($irc, $chan, $text);
     }
   }
