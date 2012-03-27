@@ -122,6 +122,34 @@ requested.
   1;
 </pre>
 
+### staving state
+
+Plugins have a `brain` method that gives access to a Redis client.
+This should be used to save all non-configuration related state.
+
+This plugin saves quotes to a Redis set.
+
+<pre>
+use v5.14;
+
+package Fuckbot::Plugin::Quote 0.1 {
+  sub commands {
+    my $self = shift;
+    return (
+      [quote => sub {$self->save_quote(@_)}]
+    );
+  }
+
+  sub save_quote {
+    my ($self, $irc, $chan, $quote) = @_;
+    $self->brain->sadd("quotes", $quote);
+    $irc->send_srv(PRIVMSG => $chan, "saved!");
+  }
+}
+
+1;
+</pre>
+
 ## console
 
 When the bot is started a unix socket is created. Any perl statements
