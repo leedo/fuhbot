@@ -4,6 +4,7 @@ package Fuckbot 0.1 {
   use AnyEvent;
   use AnyEvent::IRC::Util;
   use Fuckbot::IRC;
+  use Redis;
 
   sub new {
     my ($class, @argv) = @_;
