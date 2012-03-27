@@ -78,12 +78,7 @@ The following plugin responds to the line `fuckbot: insult lee`.
   package Fuckbot::Plugin::Insult 0.1 {
     use parent "Fuckbot::Plugin";
     
-    sub commands {
-      my $self = shift;
-      return (
-        [insult => sub {$self->insult(@_)}],
-      )
-    }
+    sub commands {qw/insult/}
     
     sub insult {
       my ($self, $irc, $chan, $nick) = @_;
