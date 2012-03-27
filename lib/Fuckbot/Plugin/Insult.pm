@@ -12,6 +12,8 @@ package Fuckbot::Plugin::Insult 0.1 {
 
   sub insult {
     my ($self, $irc, $chan, $nick) = @_;
+    $nick ||= $chan;
+
     $self->brain->srandmember("insults", sub {
       my $insult = shift;
       $nick =~ s/^\s+//;
