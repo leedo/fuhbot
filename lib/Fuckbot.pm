@@ -154,7 +154,6 @@ package Fuckbot 0.1 {
 
     for my $command ($self->commands) {
       my ($pattern, $cb) = @{$command};
-      warn $pattern;
       if ($text =~ s/^$pattern\s*//) {
         $cb->($irc, $chan, $text);
         return;
