@@ -6,6 +6,7 @@ package Fuckbot::Plugin::URLTitle {
   use AnyEvent::IRC::Util;
   use AnyEvent::HTTP;
   use HTML::Entities;
+  use Encode;
 
   sub irc_privmsg {
     my ($self, $irc, $msg) = @_;
@@ -19,7 +20,8 @@ package Fuckbot::Plugin::URLTitle {
         my ($body, $headers) = @_;
         if ($headers->{Status} == 200) {
           if (my ($title) = $body =~ m{<title>([^<]+)<}) {
-            $irc->send_srv(PRIVMSG => $chan, decode_entities $title);
+            my $encoded = encode "utf8", decode_entities decode "utf8", $title;
+            $irc->send_srv(PRIVMSG => $chan, $encoded);
           }
         }
       }
