@@ -18,8 +18,9 @@ package Fuckbot::Plugin::URLTitle {
       AnyEvent::HTTP::http_get $url, sub {
         my ($body, $headers) = @_;
         if ($headers->{Status} == 200) {
-          my ($title) = $body =~ m{<title>([^<]+)<};
-          $irc->send_srv(PRIVMSG => $chan, decode_entities $title);
+          if (my ($title) = $body =~ m{<title>([^<]+)<}) {
+            $irc->send_srv(PRIVMSG => $chan, decode_entities $title);
+          }
         }
       }
     }
