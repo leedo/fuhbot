@@ -22,11 +22,12 @@ package Fuckbot::Plugin::Github 0.1 {
     if ($payload) {
       my $data = decode_json $payload;
       my $repo = $data->{repository}{name};
+      my $branch = branch = (split "/", $data->{ref})[-1];
 
       for my $commit (@{$data->{commits}}) {
         Fuckbot::ShortURL::shorten $commit->{url}, sub {
           my $url = shift;
-          $self->broadcast("[$repo] $commit->{message} ($commit->{author}{name}) - $url");
+          $self->broadcast("[$repo-$branch] $commit->{message} ($commit->{author}{name}) - $url");
         };
       }
     }
