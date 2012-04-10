@@ -27,7 +27,7 @@ package Fuckbot::Plugin::Github 0.1 {
       for my $commit (@{$data->{commits}}) {
         Fuckbot::ShortURL::shorten $commit->{url}, sub {
           my $url = shift;
-          $self->broadcast("[$repo-$branch] $commit->{message} ($commit->{author}{name}) - $url");
+          $self->broadcast("[$repo $branch] $commit->{message} ($commit->{author}{name}) - $url");
         };
       }
     }
