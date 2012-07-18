@@ -4,7 +4,7 @@ package Fuckbot 0.1 {
   use AnyEvent;
   use AnyEvent::IRC::Util;
   use Fuckbot::IRC;
-  use Redis;
+  use AnyEvent::Redis;
 
   sub new {
     my ($class, @argv) = @_;
@@ -13,7 +13,7 @@ package Fuckbot 0.1 {
       ircs     => [],
       plugins  => [],
       config   => {},
-      brain    => Redis->new(reconnect => 60),
+      brain    => AnyEvent::Redis->new,
       config_file => $argv[0],
     }, $class;
   }

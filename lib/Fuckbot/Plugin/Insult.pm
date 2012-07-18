@@ -12,19 +12,19 @@ package Fuckbot::Plugin::Insult 0.1 {
     $nick =~ s/^\s+//;
     $nick =~ s/\s+$//;
 
-    my $insult = $self->brain->srandmember("insults");
-    if ($insult) {
+    my $cv = $self->brain->srandmember("insults");
+    $cv->cb(sub {
+      my $insult = $_[1] || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
-    }
-    else {
-      $irc->send_srv(PRIVMSG => $chan, "I don't have any insults yet");
-    }
+    });
   }
 
   sub add_insult {
     my ($self, $irc, $chan, $insult) = @_;
-    $self->brain->sadd("insults", $insult);
-    $irc->send_srv(PRIVMSG => $chan, "ok!");
+    my $cv = $self->brain->sadd("insults", $insult);
+    $cv->cb(sub {
+      $irc->send_srv(PRIVMSG => $chan, "ok!");
+    });
   }
 }
 
