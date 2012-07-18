@@ -13,7 +13,12 @@ package Fuckbot::Plugin::Insult 0.1 {
     $nick =~ s/\s+$//;
 
     my $insult = $self->brain->srandmember("insults");
-    $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
+    if ($insult) {
+      $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
+    }
+    else {
+      $irc->send_srv(PRIVMSG => $chan, "I don't have any insults yet");
+    }
   }
 
   sub add_insult {
