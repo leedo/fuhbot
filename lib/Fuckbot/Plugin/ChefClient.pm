@@ -28,10 +28,11 @@ package Fuckbot::Plugin::ChefClient 0.1 {
 
       when ("start") {
         if ($self->{cv}) {
-          $self->spawn_deploy;
+          $irc->send_srv(PRIVMSG => $chan, "deploy already in progress");
         }
         else {
-          $irc->send_srv(PRIVMSG => $chan, "deploy already in progress");
+          $self->broadcast("starting deploy");
+          $self->spawn_deploy;
         }
       }
 
@@ -53,9 +54,6 @@ package Fuckbot::Plugin::ChefClient 0.1 {
   sub spawn_deploy {
     my $self = shift;
     $self->{cv} = AnyEvent::Util::run_cmd [split " ", $self->{command}],
-      on_prepare => sub {
-        $self->broadcast("starting deploy");
-      },
       '>' => sub {
         my @lines = split "\n", shift;
         $self->{last_line} = $lines[-1];
@@ -73,3 +71,5 @@ package Fuckbot::Plugin::ChefClient 0.1 {
     });
   }
 }
+
+1;
