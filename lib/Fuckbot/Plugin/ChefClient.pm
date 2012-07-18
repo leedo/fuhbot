@@ -4,6 +4,11 @@ package Fuckbot::Plugin::ChefClient 0.1 {
   use parent 'Fuckbot::Plugin';
   use AnyEvent::Util ();
 
+  sub prepare_plugin {
+    my $self = shift;
+    $self->{command} = $self->config("command") || "chef-client";
+  }
+
   sub commands {qw/deploy/}
 
   sub deploy {
@@ -13,15 +18,23 @@ package Fuckbot::Plugin::ChefClient 0.1 {
       when ("cancel") {
         if ($self->{cv}) {
           delete $self->{cv};
+          delete $self->{last_line};
           $self->broadcast("deploy canceled");
         }
         else {
           $irc->send_srv(PRIVMSG => $chan, "no deploy in progress");
         }
       }
+
       when ("start") {
-        $irc->send_srv(PRIVMSG => $chan, "deploy already in progress");
+        if ($self->{cv}) {
+          $self->spawn_deploy;
+        }
+        else {
+          $irc->send_srv(PRIVMSG => $chan, "deploy already in progress");
+        }
       }
+
       default {
         if ($self->{cv}) {
           $irc->send_srv(PRIVMSG => $chan, "deploying");
@@ -39,7 +52,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
 
   sub spawn_deploy {
     my $self = shift;
-    $self->{cv} = AnyEvent::Util::run_cmd [qw/chef-client/],
+    $self->{cv} = AnyEvent::Util::run_cmd [split " ", $self->{command}],
       on_prepare => sub {
         $self->broadcast("starting deploy");
       },
@@ -49,7 +62,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
       },
       '2>' => sub {
         my @lines = split "\n", shift;
-        $self->broadcast(@_) for @lines;
+        $self->broadcast(@lines);
         $self->{last_line} = $lines[-1];
       };
 
