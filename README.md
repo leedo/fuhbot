@@ -117,7 +117,7 @@ requested.
   1;
 </pre>
 
-### staving state
+### saving state
 
 Plugins have a `brain` method that gives access to a Redis client.
 This should be used to save all non-configuration related state.
@@ -132,14 +132,16 @@ package Fuckbot::Plugin::Quote 0.1 {
 
   sub quote_random {
     my ($self, $irc, $chan, $quote) = @_;
-    $quote = $self->brain->srandmember("quotes");
-    $self->send_srv(PRIVMSG => $chan, $quote);
+    $quote = $self->brain->srandmember("quotes", sub {
+      $self->send_srv(PRIVMSG => $chan, $quote);
+    });
   }
 
   sub quote_add {
     my ($self, $irc, $chan, $quote) = @_;
-    $self->brain->sadd("quotes", $quote);
-    $irc->send_srv(PRIVMSG => $chan, "saved!");
+    $self->brain->sadd("quotes", $quote, sub {
+      $irc->send_srv(PRIVMSG => $chan, "saved!");
+    });
   }
 }
 
