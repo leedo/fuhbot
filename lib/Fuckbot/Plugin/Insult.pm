@@ -14,7 +14,7 @@ package Fuckbot::Plugin::Insult 0.1 {
 
     my $cv = $self->brain->srandmember("insults");
     $cv->cb(sub {
-      my $insult = $_[1]->recv || "I don't have an insult";
+      my $insult = $_[0]->recv || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
     });
   }
