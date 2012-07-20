@@ -131,8 +131,9 @@ package Fuckbot::Plugin::Quote 0.1 {
   sub commands {qw/quote_random quote_add/}
 
   sub quote_random {
-    my ($self, $irc, $chan, $quote) = @_;
-    $quote = $self->brain->srandmember("quotes", sub {
+    my ($self, $irc, $chan) = @_;
+    $self->brain->srandmember("quotes", sub {
+      my $quote = shift;
       $self->send_srv(PRIVMSG => $chan, $quote);
     });
   }
