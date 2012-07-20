@@ -11,7 +11,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
   }
 
   sub commands {
-    qw/deploy deploy_cancel deploy_start deploy_status/
+    qw/deploy_cancel deploy_start deploy_status/
   }
 
   sub deploy_cancel {
@@ -57,7 +57,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
   sub spawn_deploy {
     my $self = shift;
     $self->{errors} = [];
-    $self->{cv} = AnyEvent::Util::run_cmd [split " ", $self->{command}],
+    $self->{cv} = AnyEvent::Util::run_cmd $self->{command},
       '>' => sub {
         my @lines = split "\n", shift;
         $self->{last_line} = $lines[-1];
