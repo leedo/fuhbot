@@ -43,8 +43,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
-      $irc->send_srv(PRIVMSG => $chan, "deploying");
-      $irc->send_srv(PRIVMSG => $chan, scalar @{$self->{errors}} . " errors");
+      $irc->send_srv(PRIVMSG => $chan, "deploying (" . scalar @{$self->{errors}} . " errors)");
       $irc->send_srv(PRIVMSG => $chan, "last line: " . $self->{last_line});
     }
     else {
@@ -70,7 +69,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
       };
 
     $self->{cv}->cb(sub {
-      $self->broadcast("deploy complete");
+      $self->broadcast("deploy complete (" . scalar @{$self->{errors}} . " errors)");
       $self->broadcast($_) for @{$self->{errors}};
       delete $self->{cv};
       delete $self->{last_line};
