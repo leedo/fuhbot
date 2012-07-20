@@ -5,6 +5,7 @@ package Fuckbot 0.1 {
   use AnyEvent::IRC::Util;
   use Fuckbot::IRC;
   use AnyEvent::Redis;
+  use List::Util qw/first/;
 
   sub new {
     my ($class, @argv) = @_;
@@ -60,8 +61,8 @@ package Fuckbot 0.1 {
   }
 
   sub broadcast {
-    my ($self, $msg) = @_;
-    for my $irc ($self->ircs) {
+    my ($self, $msg, $networks) = @_;
+    for my $irc ($self->ircs($networks)) {
       $irc->broadcast($msg);
     }
   }
@@ -127,7 +128,7 @@ package Fuckbot 0.1 {
     my ($self, $irc, $msg) = @_;
     my $method = lc "irc_$msg->{command}";
 
-    for my $plugin ($self->plugins) {
+    for my $plugin ($self->plugins($irc->name)) {
       $plugin->$method($irc, $msg) if $plugin->can($method);
     }
   }
@@ -152,7 +153,7 @@ package Fuckbot 0.1 {
   sub handle_command {
     my ($self, $irc, $chan, $text) = @_;
 
-    for my $command ($self->commands) {
+    for my $command ($self->commands($irc->name)) {
       my ($pattern, $cb) = @{$command};
       if ($text =~ s/^$pattern\s*//) {
         $cb->($irc, $chan, $text);
@@ -162,8 +163,8 @@ package Fuckbot 0.1 {
   }
 
   sub commands {
-    my $self = shift;
-    return map {$_->command_callbacks} $self->plugins;
+    my ($self, $network) = @_;
+    return map {$_->command_callbacks} $self->plugins($network);
   }
 
   sub load_config {
@@ -175,8 +176,23 @@ package Fuckbot 0.1 {
     $self->{config} = do $self->{config_file};
   }
 
-  sub ircs { @{$_[0]->{ircs}} }
-  sub plugins { @{$_[0]->{plugins}} }
+  sub ircs {
+    my ($self, $networks) = @_;
+    return @{$self->{ircs}} unless $networks;
+    grep {
+      my $n = $_->{name};
+      first {$_ eq $n} @$networks
+    } @{$self->{ircs}}
+  }
+
+  sub plugins {
+    my ($self, $network) = @_;
+    return @{$self->{plugins}} unless $network;
+    grep {
+      my $i = $_->config("ircs");
+      !$i || first {$_ eq $network} @{$i}
+    } @{$self->{plugins}};
+  }
 
   sub config {
     my ($self, $key) = @_;

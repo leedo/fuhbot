@@ -51,7 +51,7 @@ package Fuckbot::Plugin 0.1 {
   sub broadcast {
     my ($self, @msgs) = @_;
     if (@msgs) {
-      $self->{broadcast}->($_) for @msgs;
+      $self->{broadcast}->($_, $self->config("ircs")) for @msgs;
     }
   }
 

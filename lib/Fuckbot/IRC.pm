@@ -33,6 +33,8 @@ package Fuckbot::IRC 0.1 {
       $self->connect;
     }
   }
+  
+  sub name { $_[0]->config("name") }
 
   sub config {
     my ($self, $key) = @_;
