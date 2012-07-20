@@ -24,7 +24,7 @@ package Fuckbot::Plugin::CMS 0.1 {
       Fuckbot::Util::shorten $data->{url}, sub {
         my $url = shift;
         my $color = $data->{type} eq "error" ? 4 : 3;
-        $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 \"$data->{message}\" - $url");
+        $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $data->{message} - $url");
       };
     }
   }
