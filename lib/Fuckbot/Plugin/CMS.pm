@@ -3,6 +3,7 @@ use v5.14;
 package Fuckbot::Plugin::CMS 0.1 {
   use parent 'Fuckbot::Plugin';
   use Fuckbot::HTTPD;
+  use Fuckbot::Util;
   use JSON::XS;
   
   sub prepare_plugin {
@@ -20,8 +21,11 @@ package Fuckbot::Plugin::CMS 0.1 {
 
     if ($payload) {
       my $data = decode_json $payload;
-      my $color = $data->{type} eq "error" ? 4 : 3;
-      $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $data->{message} $data->{url}");
+      Fuckbot::Util::shorten $data->{url}, sub {
+        my $url = shift;
+        my $color = $data->{type} eq "error" ? 4 : 3;
+        $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 \"$data->{message}\" - $url");
+      };
     }
   }
 }
