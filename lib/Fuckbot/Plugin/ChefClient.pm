@@ -3,11 +3,12 @@ use v5.14;
 package Fuckbot::Plugin::ChefClient 0.1 {
   use parent 'Fuckbot::Plugin';
   use AnyEvent::Util ();
+  use Fuckbot::Util;
 
   sub prepare_plugin {
     my $self = shift;
     $self->{command} = $self->config("command") || "chef-client";
-    $self->{errors} = [];
+    $self->{lines}  = [];
   }
 
   sub commands {
@@ -19,7 +20,6 @@ package Fuckbot::Plugin::ChefClient 0.1 {
 
     if ($self->{cv}) {
       delete $self->{cv};
-      delete $self->{last_line};
       $self->broadcast("deploy canceled");
     }
     else {
@@ -43,36 +43,40 @@ package Fuckbot::Plugin::ChefClient 0.1 {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
-      $irc->send_srv(PRIVMSG => $chan, "deploying (" . scalar @{$self->{errors}} . " errors)");
-      $irc->send_srv(PRIVMSG => $chan, "last line: " . $self->{last_line});
+      $irc->send_srv(PRIVMSG => $chan, "deploying (" . scalar $self->errors . " errors)");
+      Fuckbot::Util::gist "deploy-$self->{time}.txt",
+        join("\n", @{$self->{lines}}),
+        sub { $self->broadcast(shift) };
     }
     else {
       $irc->send_srv(PRIVMSG => $chan, "idle");
     }
   }
 
-  sub deploy { deploy_status @_ }
+  sub errors {
+    my $self = shift;
+    grep {/ERROR: /} @{$self->{lines}};
+  }
 
   sub spawn_deploy {
     my $self = shift;
-    $self->{errors} = [];
+
+    $self->{lines} = [];
+    $self->{time} = time;
+
     $self->{cv} = AnyEvent::Util::run_cmd $self->{command},
       '>' => sub {
         my @lines = split "\n", shift;
-        $self->{last_line} = $lines[-1];
-      },
-      '2>' => sub {
-        my @lines = split "\n", shift;
-        $self->broadcast(@lines);
-        push @{$self->{errors}}, @lines;
-        $self->{last_line} = $lines[-1];
+        $self->broadcast($_) for grep {/ERROR: /} @lines;
+        push @{$self->{lines}}, @lines;
       };
 
     $self->{cv}->cb(sub {
-      $self->broadcast("deploy complete (" . scalar @{$self->{errors}} . " errors)");
-      $self->broadcast($_) for @{$self->{errors}};
       delete $self->{cv};
-      delete $self->{last_line};
+      $self->broadcast("deploy complete (" . scalar $self->errors . " errors)");
+      Fuckbot::Util::gist "deploy-$self->{time}.txt",
+        join("\n", @{$self->{lines}}),
+        sub { $self->broadcast(shift) };
     });
   }
 }

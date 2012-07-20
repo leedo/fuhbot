@@ -2,7 +2,7 @@ use v5.14;
 
 package Fuckbot::Plugin::Github 0.1 {
   use parent 'Fuckbot::Plugin';
-  use Fuckbot::ShortURL;
+  use Fuckbot::Util;
   use Fuckbot::HTTPD;
   use JSON::XS;
 
@@ -25,7 +25,7 @@ package Fuckbot::Plugin::Github 0.1 {
       my $branch = (split "/", $data->{ref})[-1];
 
       for my $commit (@{$data->{commits}}) {
-        Fuckbot::ShortURL::shorten $commit->{url}, sub {
+        Fuckbot::Util::shorten $commit->{url}, sub {
           my $url = shift;
           $self->broadcast("[$repo $branch] $commit->{message} ($commit->{author}{name}) - $url");
         };
