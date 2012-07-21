@@ -1,8 +1,8 @@
-# fuckbot
+# fuhbot
 
-<pre>perl -Ilib bin/fuckbot config.pl</pre>
+<pre>perl -Ilib bin/fuhbot config.pl</pre>
 
-fuckbot is a simple IRC bot with a administrative console and plugin
+fuhbot is a simple IRC bot with a administrative console and plugin
 system.  Plugins have access to IRC events and can broadcast messages
 to all channels.
 
@@ -24,7 +24,7 @@ This is a very simple config that loads the `Insult` plugin.
     { name => "perl",
       host => "irc.perl.org,
       port => 6667,
-      nick => "fuckbot",
+      nick => "fuhbot",
     }
   ],
 }
@@ -33,7 +33,7 @@ This is a very simple config that loads the `Insult` plugin.
 
 ## plugins
 
-Plugins should inherit from `Fuckbot::Plugin`, and can use the
+Plugins should inherit from `Fuhbot::Plugin`, and can use the
 `prepare_plugin` method to setup any attributes when the bot is
 started.
 
@@ -48,8 +48,8 @@ This plugin will broadcast a message whenever a topic is changed.
 <pre>
   use v5.14;
 
-  package Fuckbot::Plugin::Topic 0.1 {
-    use parent "Fuckbot::Plugin";
+  package Fuhbot::Plugin::Topic 0.1 {
+    use parent "Fuhbot::Plugin";
 
     sub irc_topic {
       my ($self, $irc, $msg) = @_;
@@ -70,19 +70,19 @@ callbacks. When a the command matches it will be called, and be
 passed the IRC connection, channel name, and any text after the
 command.
 
-The following plugin responds to the line `fuckbot: insult lee`.
+The following plugin responds to the line `fuhbot: insult lee`.
 
 <pre>
   use v5.14
 
-  package Fuckbot::Plugin::Insult 0.1 {
-    use parent "Fuckbot::Plugin";
+  package Fuhbot::Plugin::Insult 0.1 {
+    use parent "Fuhbot::Plugin";
     
     sub commands {qw/insult/}
     
     sub insult {
       my ($self, $irc, $chan, $nick) = @_;
-      $irc->send_srv(PRIVMSG => $chan, "fuck $nick");
+      $irc->send_srv(PRIVMSG => $chan, "fuh $nick");
     }
   }
 
@@ -99,13 +99,13 @@ requested.
 <pre>
   use v5.14;
 
-  package Fuckbot::Plugin::Toot 0.1 {
-    use parent "Fuckbot::Plugin";
-    use Fuckbot::HTTPD;
+  package Fuhbot::Plugin::Toot 0.1 {
+    use parent "Fuhbot::Plugin";
+    use Fuhbot::HTTPD;
 
     sub prepare_plugin {
       my $self = shift;
-      $self->{httpd} = Fuckbot::HTTPD->new(8080);
+      $self->{httpd} = Fuhbot::HTTPD->new(8080);
       $self->{httpd}->reg_cb("/toot", sub {
         my ($httpd, $req) = @_;
         $req->respond(["text/plain", "toot!"]);
@@ -127,7 +127,7 @@ This plugin implements `quote random` and `quote add` commands.
 <pre>
 use v5.14;
 
-package Fuckbot::Plugin::Quote 0.1 {
+package Fuhbot::Plugin::Quote 0.1 {
   sub commands {qw/quote_random quote_add/}
 
   sub quote_random {
@@ -154,13 +154,13 @@ package Fuckbot::Plugin::Quote 0.1 {
 When the bot is started a unix socket is created. Any perl statements
 sent to the socket will be evaluated. `bin/console` provides a
 simple readline interface to do this. The bot is available from the
-console as `$::fuckbot`.
+console as `$::fuhbot`.
 
 Here is a simple console session that lists all the IRC servers
 that the bot is connected to.
 
 <pre>
-> map {$_->config("name")} grep {$_->is_connected} $::fuckbot->ircs
+> map {$_->config("name")} grep {$_->is_connected} $::fuhbot->ircs
 
 perl
 freenode
@@ -171,5 +171,5 @@ The console is also useful for reloading plugins. This statement
 will reload the Insult plugin.
 
 <pre>
-> $::fuckbot->reload_plugin("Insult")
+> $::fuhbot->reload_plugin("Insult")
 </pre>

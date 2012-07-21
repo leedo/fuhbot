@@ -1,6 +1,6 @@
 use v5.14;
 
-package Fuckbot::Plugin 0.1 {
+package Fuhbot::Plugin 0.1 {
   sub new {
     my $class = shift;
     bless {@_}, $class;

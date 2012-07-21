@@ -1,9 +1,9 @@
 use v5.14;
 
-package Fuckbot::Plugin::ChefClient 0.1 {
-  use parent 'Fuckbot::Plugin';
+package Fuhbot::Plugin::ChefClient 0.1 {
+  use parent 'Fuhbot::Plugin';
   use AnyEvent::Util ();
-  use Fuckbot::Util;
+  use Fuhbot::Util;
 
   sub prepare_plugin {
     my $self = shift;
@@ -44,7 +44,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
 
     if ($self->{cv}) {
       $irc->send_srv(PRIVMSG => $chan, "deploying (" . scalar $self->errors . " errors)");
-      Fuckbot::Util::gist "deploy-$self->{time}.txt",
+      Fuhbot::Util::gist "deploy-$self->{time}.txt",
         join("\n", @{$self->{lines}}),
         sub { $self->broadcast(shift) };
     }
@@ -74,7 +74,7 @@ package Fuckbot::Plugin::ChefClient 0.1 {
     $self->{cv}->cb(sub {
       delete $self->{cv};
       $self->broadcast("deploy complete (" . scalar $self->errors . " errors)");
-      Fuckbot::Util::gist "deploy-$self->{time}.txt",
+      Fuhbot::Util::gist "deploy-$self->{time}.txt",
         join("\n", @{$self->{lines}}),
         sub { $self->broadcast(shift) };
     });

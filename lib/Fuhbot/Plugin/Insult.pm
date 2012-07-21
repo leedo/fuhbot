@@ -1,7 +1,7 @@
 use v5.14;
 
-package Fuckbot::Plugin::Insult 0.1 {
-  use parent 'Fuckbot::Plugin';
+package Fuhbot::Plugin::Insult 0.1 {
+  use parent 'Fuhbot::Plugin';
 
   sub commands {qw/insult add_insult/}
 

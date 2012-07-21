@@ -1,15 +1,15 @@
 use v5.14;
 
-package Fuckbot::Plugin::Github 0.1 {
-  use parent 'Fuckbot::Plugin';
-  use Fuckbot::Util;
-  use Fuckbot::HTTPD;
+package Fuhbot::Plugin::Github 0.1 {
+  use parent 'Fuhbot::Plugin';
+  use Fuhbot::Util;
+  use Fuhbot::HTTPD;
   use JSON::XS;
 
   sub prepare_plugin {
     my $self = shift;
     my $port = $self->config("port") || 9091;
-    $self->{httpd} = Fuckbot::HTTPD->new($port);
+    $self->{httpd} = Fuhbot::HTTPD->new($port);
     $self->{httpd}->reg_cb("/github" => sub { $self->handle_req(@_) });
   }
 
@@ -25,7 +25,7 @@ package Fuckbot::Plugin::Github 0.1 {
       my $branch = (split "/", $data->{ref})[-1];
 
       for my $commit (@{$data->{commits}}) {
-        Fuckbot::Util::shorten $commit->{url}, sub {
+        Fuhbot::Util::shorten $commit->{url}, sub {
           my $url = shift;
           $self->broadcast("[$repo $branch] $commit->{message} ($commit->{author}{name}) - $url");
         };

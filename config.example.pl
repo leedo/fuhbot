@@ -18,8 +18,8 @@
       name => "perl",
       host => "irc.perl.org",
       port => 6667,
-      nick => "fuckbot",
-      channels => [qw/#fuckbot/],
+      nick => "fuhbot",
+      channels => [qw/#fuhbot/],
     }
   ]
 }

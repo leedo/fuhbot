@@ -1,6 +1,6 @@
 use v5.14;
 
-package Fuckbot::Util 0.1 {
+package Fuhbot::Util 0.1 {
   use AnyEvent::HTTP;
   use URI::Escape;
   use JSON::XS;

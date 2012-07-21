@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ -e "fuckbot2.sock" ]
+if [ -e "fuhbot.sock" ]
 then
-  socat readline ./fuckbot2.sock
+  socat readline ./fuhbot.sock
 else
-  echo "fuckbot is not running!"
+  echo "fuhbot is not running!"
 fi

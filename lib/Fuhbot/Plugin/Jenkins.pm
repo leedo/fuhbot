@@ -1,15 +1,15 @@
 use v5.14;
 
-package Fuckbot::Plugin::Jenkins 0.1 {
-  use parent 'Fuckbot::Plugin';
-  use Fuckbot::Util;
-  use Fuckbot::HTTPD;
+package Fuhbot::Plugin::Jenkins 0.1 {
+  use parent 'Fuhbot::Plugin';
+  use Fuhbot::Util;
+  use Fuhbot::HTTPD;
   use JSON::XS;
   
   sub prepare_plugin {
     my $self = shift;
     my $port = $self->config("port") || 9091;
-    $self->{httpd} = Fuckbot::HTTPD->new($port);
+    $self->{httpd} = Fuhbot::HTTPD->new($port);
     $self->{httpd}->reg_cb("/jenkins" => sub { $self->handle_req(@_) });
   }
 
@@ -24,7 +24,7 @@ package Fuckbot::Plugin::Jenkins 0.1 {
       my $build = $data->{build};
       my $name = $data->{name};
       my $prefix = $self->config("url");
-      Fuckbot::Util::shorten "$prefix/$build->{url}", sub {
+      Fuhbot::Util::shorten "$prefix/$build->{url}", sub {
         my $url = shift;
         $self->broadcast("build #$build->{number} of $name has $build->{phase} $build->{status} - $url");
       };

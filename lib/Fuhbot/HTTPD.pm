@@ -1,6 +1,6 @@
 use v5.14;
 
-package Fuckbot::HTTPD 0.1 {
+package Fuhbot::HTTPD 0.1 {
   use AnyEvent::HTTPD;
   my $httpds = {}; # shared between instances
 

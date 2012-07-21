@@ -1,9 +1,9 @@
 use v5.14;
 
-package Fuckbot 0.1 {
+package Fuhbot 0.1 {
   use AnyEvent;
   use AnyEvent::IRC::Util;
-  use Fuckbot::IRC;
+  use Fuhbot::IRC;
   use AnyEvent::Redis;
   use List::Util qw/first/;
 
@@ -75,7 +75,7 @@ package Fuckbot 0.1 {
   sub load_ircs {
     my $self = shift;
     for my $config (@{$self->config("ircs")}) {
-      my $irc = Fuckbot::IRC->new($config);
+      my $irc = Fuhbot::IRC->new($config);
       $irc->reg_cb("irc_*" => sub { $self->irc_line(@_) });
       $irc->reg_cb("publicmsg" => sub { $self->channel_msg(@_) });
       $irc->reg_cb("privatemsg" => sub { $self->private_msg(@_) });
@@ -94,7 +94,7 @@ package Fuckbot 0.1 {
   sub load_plugin {
     my ($self, $config) = @_;
 
-    my $class = "Fuckbot::Plugin::$config->{name}";
+    my $class = "Fuhbot::Plugin::$config->{name}";
     eval "use $class";
     die $@ if $@;
     
@@ -110,7 +110,7 @@ package Fuckbot 0.1 {
 
   sub reload_plugin {
     my ($self, $name) = @_;
-    delete $INC{"Fuckbot/Plugin/$name.pm"};
+    delete $INC{"Fuhbot/Plugin/$name.pm"};
 
     my $orig = [ $self->plugins ];
     $self->{plugins} = [grep {$_->name ne $name} $self->plugins];

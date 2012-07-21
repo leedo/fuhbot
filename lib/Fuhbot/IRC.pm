@@ -1,13 +1,13 @@
 use v5.14;
 
-package Fuckbot::IRC 0.1 {
+package Fuhbot::IRC 0.1 {
   use parent 'AnyEvent::IRC::Client';
 
   sub new {
     my ($class, $config) = @_;
     die "irc config must include nick" unless defined $config->{nick};
     my $self = $class->SUPER::new;
-    $self->{fuckbot_config} = $config;
+    $self->{fuhbot_config} = $config;
     $self->setup_events;
     return $self;
   }
@@ -24,7 +24,7 @@ package Fuckbot::IRC 0.1 {
     my ($self, $cb) = @_;
     $self->unreg_cb($self->{reconnect_cb});
     $self->reg_cb(disconnect => $cb);
-    $self->send_srv(QUIT => "fuckbot");
+    $self->send_srv(QUIT => "fuhbot");
   }
 
   sub reconnect {
@@ -39,10 +39,10 @@ package Fuckbot::IRC 0.1 {
   sub config {
     my ($self, $key) = @_;
     if (defined $key) {
-      return $self->{fuckbot_config}{$key};
+      return $self->{fuhbot_config}{$key};
     }
 
-    return $self->{fuckbot_config};
+    return $self->{fuhbot_config};
   }
 
   sub connect {
