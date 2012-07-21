@@ -4,6 +4,7 @@ package Fuhbot::Plugin::CMS 0.1 {
   use parent 'Fuhbot::Plugin';
   use Fuhbot::HTTPD;
   use Fuhbot::Util;
+  use IRC::Formatting::HTML;
   use JSON::XS;
   
   sub prepare_plugin {
@@ -24,7 +25,8 @@ package Fuhbot::Plugin::CMS 0.1 {
       Fuhbot::Util::shorten $data->{url}, sub {
         my $url = shift;
         my $color = $data->{type} eq "error" ? 4 : 3;
-        $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $data->{message} - $url");
+        my $message = IRC::Formatting::HTML::html_to_irc($data->{message});
+        $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
       };
     }
   }

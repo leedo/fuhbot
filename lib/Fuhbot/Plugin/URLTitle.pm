@@ -6,6 +6,7 @@ package Fuhbot::Plugin::URLTitle {
   use AnyEvent::IRC::Util;
   use AnyEvent::HTTP;
   use HTML::Entities;
+  use IRC::Formatting::HTML;
   use Encode;
 
   sub irc_privmsg {
@@ -20,6 +21,7 @@ package Fuhbot::Plugin::URLTitle {
         my ($body, $headers) = @_;
         if ($headers->{Status} == 200) {
           if (my ($title) = $body =~ m{<title>([^<]+)<}) {
+            $title = IRC::Formatting::HTML::html_to_irc($title);
             my $encoded = encode "utf8", decode_entities decode "utf8", $title;
             $irc->send_srv(PRIVMSG => $chan, $encoded);
           }
