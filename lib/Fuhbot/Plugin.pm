@@ -57,7 +57,7 @@ package Fuhbot::Plugin 0.1 {
 
   sub shutdown {
     my ($self, $cb) = @_;
-    $cb->();
+    $cb->() if $cb;
   }
 }
 

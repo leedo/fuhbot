@@ -10,7 +10,7 @@ package Fuhbot::Plugin::CMS 0.1 {
     my $self = shift;
     my $port = $self->config("port") || 9091;
     $self->{httpd} = Fuhbot::HTTPD->new($port);
-    $self->{httpd}->reg_cb("/cms" => sub { $self->handle_req(@_) });
+    $self->{guard} = $self->{httpd}->reg_cb("/cms" => sub { $self->handle_req(@_) });
   }
 
   sub handle_req {
