@@ -180,7 +180,7 @@ package Fuckbot 0.1 {
     my ($self, $networks) = @_;
     return @{$self->{ircs}} unless $networks;
     grep {
-      my $n = $_->{name};
+      my $n = $_->name;
       first {$_ eq $n} @$networks
     } @{$self->{ircs}}
   }
