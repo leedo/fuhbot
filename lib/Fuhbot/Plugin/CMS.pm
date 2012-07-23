@@ -24,7 +24,13 @@ package Fuhbot::Plugin::CMS 0.1 {
       my $data = decode_json $payload;
       Fuhbot::Util::shorten $data->{url}, sub {
         my $url = shift;
-        my $color = $data->{type} eq "error" ? 4 : 3;
+        my $color = do {
+          given ($data->{type}) {
+            when ("error") { 4 }
+            when ("success") { 3 }
+            default { 14 }
+          }
+        };
         my $message = IRC::Formatting::HTML::html_to_irc($data->{message});
         $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
       };
