@@ -10,9 +10,10 @@ package Fuhbot::HTTPD 0.1 {
     my ($class, $port) = @_;
     return $HTTPD->{$port} if defined $HTTPD->{$port};
 
-    $HTTPD->{$port} = AnyEvent::HTTPD->new(port => $port);
+    my $httpd = AnyEvent::HTTPD->new(port => $port);
+    $HTTPD->{$port} = $httpd;
     weaken $HTTPD->{$port};
-    return $HTTPD->{$port};
+    return $httpd;
   }
 }
 
