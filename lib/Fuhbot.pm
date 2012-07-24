@@ -21,8 +21,8 @@ package Fuhbot 0.1 {
 
   sub run {
     my $self = shift;
-    my $cv = AE::cv;
-    my $sigs = AE::signal INT => sub { $cv->send };
+    $self->{cv} = AE::cv;
+    my $sigs = AE::signal INT => sub { $self->shutdown };
 
     say "loading config...";
     $self->load_config;
@@ -33,9 +33,11 @@ package Fuhbot 0.1 {
     say "loading ircs...";
     $self->load_ircs;
 
-    $cv->recv;
+    $self->{cv}->recv;
     $self->cleanup;
   }
+
+  sub shutdown { $_[0]->{cv}->send }
 
   sub cleanup {
     my $self = shift;
