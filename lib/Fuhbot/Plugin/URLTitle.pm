@@ -20,10 +20,10 @@ package Fuhbot::Plugin::URLTitle {
       AnyEvent::HTTP::http_get $url, sub {
         my ($body, $headers) = @_;
         if ($headers->{Status} == 200) {
+          $body = decode utf8 => $body;
           if (my ($title) = $body =~ m{<title>(.+?)</title>}) {
-            $title = IRC::Formatting::HTML::html_to_irc($title);
-            my $encoded = encode "utf8", decode_entities decode "utf8", $title;
-            $irc->send_srv(PRIVMSG => $chan, $encoded);
+            $title = IRC::Formatting::HTML::html_to_irc decode_entities $title;
+            $irc->send_srv(PRIVMSG => $chan, encode utf8 => $title);
           }
         }
       }
