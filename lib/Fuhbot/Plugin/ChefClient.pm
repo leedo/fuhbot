@@ -67,7 +67,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{cv} = AnyEvent::Util::run_cmd $self->{command},
       '>' => sub {
         my @lines = split "\n", shift;
-        $self->broadcast($_) for grep {/ERROR: /} @lines;
+        $self->broadcast(map {"\x034\02$_"} grep {/ERROR: /} @lines);
         push @{$self->{lines}}, @lines;
       };
 
