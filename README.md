@@ -160,7 +160,7 @@ Here is a simple console session that lists all the IRC servers
 that the bot is connected to.
 
 <pre>
-> map {$_->config("name")} grep {$_->is_connected} $::fuhbot->ircs
+> map {$_->name} grep {$_->is_connected} $::fuhbot->ircs
 
 perl
 freenode
