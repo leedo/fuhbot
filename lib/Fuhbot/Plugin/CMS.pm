@@ -32,7 +32,7 @@ package Fuhbot::Plugin::CMS 0.1 {
           }
         };
         my $message = IRC::Formatting::HTML::html_to_irc($data->{message});
-        $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
+        $self->broadcast(encode utf8 => "\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
       };
     }
   }
