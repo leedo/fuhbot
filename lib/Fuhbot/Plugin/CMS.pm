@@ -6,6 +6,7 @@ package Fuhbot::Plugin::CMS 0.1 {
   use Fuhbot::Util;
   use IRC::Formatting::HTML;
   use JSON::XS;
+  use Encode;
   
   sub prepare_plugin {
     my $self = shift;
