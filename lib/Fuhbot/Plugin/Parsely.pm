@@ -15,7 +15,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
          and defined $self->config("key");
 
     $self->{authors} = [];
-    $self->{interval} = $self->config("interval") || 60 * 5;
+    $self->{interval} = $self->config("interval") || 60 * 60;
     $self->{timer} = AE::timer 0, $self->{interval}, sub {
       $self->check_parsely;
     };
@@ -34,22 +34,26 @@ package Fuhbot::Plugin::Parsely 0.1 {
   sub check_parsely {
     my $self = shift;
     my $url = $self->api_url("realtime/authors", time => "60m");
+
     http_get $url, sub {
       my ($body, $headers) = @_;
       if ($headers->{Status} == 200) {
-        $self->broadcast($body);
         my $data = decode_json $body;
         my @new = map {$_->{author}} @{$data->{data}};
+
+        $self->broadcast("\037Top authors for last 60 min");
+
         for my $i (0 .. $#new) {
-          my $message = sprintf("%2d. %s", $i + 1, $new[$i]);
+          my $message = sprintf "%2d. \002%s\002", $i + 1, $new[$i];
           my $prev = first_index {$_ eq $new[$i]} @{$self->{authors}};          
 
           if ($prev > -1) {
-            $message .= sprintf(" \x03%d%s", $i - $prev, $prev > $i ? 4 : 3);
+            $message .= sprintf ' \x03%d%+d', $prev < $i ? 4 : 3, $prev - $i;
           }
 
           $self->broadcast($message);
         }
+
         $self->{authors} = \@new;
       }
     };
