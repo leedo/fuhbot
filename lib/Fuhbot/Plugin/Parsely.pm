@@ -3,9 +3,8 @@ use v5.14;
 package Fuhbot::Plugin::Parsely 0.1 {
   use parent 'Fuhbot::Plugin';
   use AnyEvent::HTTP;
-  use IRC::Formatting::HTML;
   use JSON::XS;
-  use List::MoreUtils qw/first_index/;
+  use Encode;
 
   sub prepare_plugin {
     my $self = shift;
@@ -14,9 +13,9 @@ package Fuhbot::Plugin::Parsely 0.1 {
       unless defined $self->config("secret")
          and defined $self->config("key");
 
-    $self->{authors} = [];
-    $self->{interval} = $self->config("interval") || 60 * 60;
-    $self->{timer} = AE::timer 0, $self->{interval}, sub {
+    $self->{top_author} = "";
+    $self->{interval} = $self->config("interval") || 60 * 5;
+    $self->{timer} = AE::timer 5, $self->{interval}, sub {
       $self->check_parsely;
     };
   }
@@ -39,22 +38,12 @@ package Fuhbot::Plugin::Parsely 0.1 {
       my ($body, $headers) = @_;
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
-        my @new = map {$_->{author}} @{$data->{data}};
-
-        $self->broadcast("\037Top authors for last 60 min");
-
-        for my $i (0 .. $#new) {
-          my $message = sprintf "%2d. \002%s\002", $i + 1, $new[$i];
-          my $prev = first_index {$_ eq $new[$i]} @{$self->{authors}};          
-
-          if ($prev > -1) {
-            $message .= sprintf ' \x03%d%+d', $prev < $i ? 4 : 3, $prev - $i;
-          }
-
-          $self->broadcast($message);
+        my @authors = map {$_->{author}} @{$data->{data}};
+        if (@authors and $authors[0] ne $self->{top_author}) {
+          $self->{top_author} = $authors[0];
+          my $message = "\x0314\x02Parse.ly info:\x02\x03 new top author $self->{top_author}";
+          $self->broadcast(encode utf8 => $message);
         }
-
-        $self->{authors} = \@new;
       }
     };
   }
