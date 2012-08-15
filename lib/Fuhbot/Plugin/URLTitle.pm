@@ -23,7 +23,7 @@ package Fuhbot::Plugin::URLTitle {
           $body = decode utf8 => $body;
           if (my ($title) = $body =~ m{<title>(.+?)</title>}) {
             $title = IRC::Formatting::HTML::html_to_irc decode_entities $title;
-            $irc->send_srv(PRIVMSG => $chan, encode utf8 => $title);
+            $irc->send_srv(PRIVMSG => $chan, $title);
           }
         }
       }

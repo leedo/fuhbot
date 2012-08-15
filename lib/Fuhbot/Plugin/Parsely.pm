@@ -4,7 +4,6 @@ package Fuhbot::Plugin::Parsely 0.1 {
   use parent 'Fuhbot::Plugin';
   use AnyEvent::HTTP;
   use JSON::XS;
-  use Encode;
 
   sub prepare_plugin {
     my $self = shift;
@@ -27,7 +26,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
     $params{secret} ||= $self->config("secret");
     my $query = join "&", map {"$_=$params{$_}"} keys %params;
     
-    return "http://api.parsely.com/v2/$path?$query"
+    return "http://api.parsely.com/v2/$path?$query";
   }
 
   sub check_parsely {
@@ -42,7 +41,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
         if (@authors and $authors[0] ne $self->{top_author}) {
           $self->{top_author} = $authors[0];
           my $message = "\x0314\x02Parse.ly info:\x02\x03 new top author $self->{top_author}";
-          $self->broadcast(encode utf8 => $message);
+          $self->broadcast($message);
         }
       }
     };

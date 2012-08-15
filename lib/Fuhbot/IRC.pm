@@ -2,6 +2,7 @@ use v5.14;
 
 package Fuhbot::IRC 0.1 {
   use parent 'AnyEvent::IRC::Client';
+  use Encode;
 
   sub new {
     my ($class, $config) = @_;
@@ -73,6 +74,11 @@ package Fuhbot::IRC 0.1 {
     for my $channel (keys %$channels) {
       $self->send_srv(PRIVMSG => $channel, $msg);
     }
+  }
+
+  sub send_srv {
+    my $self = shift;
+    $self->SUPER::send_srv(map {encode utf8 => $_} @_);
   }
 }
 
