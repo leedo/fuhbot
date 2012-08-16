@@ -31,7 +31,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
 
   sub check_parsely {
     my $self = shift;
-    my $url = $self->api_url("realtime/authors", time => "60m");
+    my $url = $self->api_url("realtime/authors", time => "24h");
 
     http_get $url, sub {
       my ($body, $headers) = @_;
