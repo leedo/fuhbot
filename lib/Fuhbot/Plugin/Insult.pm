@@ -12,18 +12,15 @@ package Fuhbot::Plugin::Insult 0.1 {
     $nick =~ s/^\s+//;
     $nick =~ s/\s+$//;
 
-    my $cv = $self->brain->srandmember("insults");
-    $cv->cb(sub {
-      my $insult = $_[0]->recv || "I don't have an insult";
+    $self->brain->srandmember("insults", sub {
+      my $insult = $_[0] || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
     });
   }
 
   sub add_insult {
     my ($self, $irc, $chan, $insult) = @_;
-    my $cv = $self->brain->sadd("insults", $insult);
-    $cv->cb(sub {
-      $_[0]->recv;
+    $self->brain->sadd("insults", $insult, sub {
       $irc->send_srv(PRIVMSG => $chan, "ok!");
     });
   }
