@@ -158,6 +158,8 @@ package Fuhbot 0.1 {
     for my $command ($self->commands($irc->name)) {
       my ($pattern, $cb) = @{$command};
       if ($text =~ s/^$pattern\s*//) {
+        $text =~ s/^\s//g;
+        $text =~ s/\s$//g;
         $cb->($irc, $chan, $text);
         return;
       }
