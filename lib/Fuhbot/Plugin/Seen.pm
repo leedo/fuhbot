@@ -39,7 +39,7 @@ package Fuhbot::Plugin::Seen  0.1 {
       my $when = sprintf "on %02d/%02d/%02d at %02d:%02d", @date;
 
       $irc->send_srv(PRIVMSG => $chan, "$nick was last seen in $chan $when");
-      $irc->send_srv(PRIVMSG => $chan, " < $nick> $message");
+      $irc->send_srv(PRIVMSG => $chan, "< $nick> $message");
     });
   }
 }
