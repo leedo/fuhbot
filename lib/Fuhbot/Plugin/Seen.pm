@@ -18,6 +18,12 @@ package Fuhbot::Plugin::Seen  0.1 {
 
   sub seen {
     my ($self, $irc, $chan, $nick) = @_;
+
+    if (!$nick) {
+      $irc->send(PRIVMSG => $chan, "gimme a nick");
+      return;
+    }
+
     my $key = join "-", $nick, $chan, $irc->name;
     $self->brain->get($key, sub {
       my ($data) = @_;
