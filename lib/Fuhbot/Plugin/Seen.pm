@@ -20,7 +20,7 @@ package Fuhbot::Plugin::Seen  0.1 {
     my ($self, $irc, $chan, $nick) = @_;
 
     if (!$nick) {
-      $irc->send(PRIVMSG => $chan, "gimme a nick");
+      $irc->send_srv(PRIVMSG => $chan, "gimme a nick");
       return;
     }
 
