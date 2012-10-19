@@ -4,7 +4,24 @@ package Fuhbot::Plugin::Github 0.1 {
   use parent 'Fuhbot::Plugin';
   use Fuhbot::Util;
   use Fuhbot::HTTPD;
+  use AnyEvent::HTTP;
   use JSON::XS;
+
+  sub commands {qw/github_status/}
+
+  sub github_status {
+    my ($self, $irc, $chan);
+    http_get "https://status.github.com/realtime.json" => sub {
+      my ($body, $headers) = @_;
+      if ($headers->{Status} == 200) {
+        my $data = decode_json $body;
+        for my $service (keys %$data) {
+          my $msg = ($data->{$service} ? "\x033" : "\x034") . $service;
+          $irc->send_srv(PRIVMSG => $chan, $msg);
+        }
+      }
+    };
+  }
 
   sub prepare_plugin {
     my $self = shift;
