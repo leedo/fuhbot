@@ -44,9 +44,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
 
     if ($self->{cv}) {
       $irc->send_srv(PRIVMSG => $chan, "deploying (" . scalar $self->errors . " errors)");
-      Fuhbot::Util::gist "deploy-$self->{time}.txt",
-        join("\n", @{$self->{lines}}),
-        sub { $self->broadcast(shift) };
+      $irc->send_srv($_) for @{$self->{lines}}[-5 .. -1]);
     }
     else {
       $irc->send_srv(PRIVMSG => $chan, "idle");

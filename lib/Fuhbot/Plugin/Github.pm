@@ -10,7 +10,7 @@ package Fuhbot::Plugin::Github 0.1 {
   sub commands {qw/github_status/}
 
   sub github_status {
-    my ($self, $irc, $chan);
+    my ($self, $irc, $chan) = @_;
     http_get "https://status.github.com/realtime.json" => sub {
       my ($body, $headers) = @_;
       if ($headers->{Status} == 200) {
