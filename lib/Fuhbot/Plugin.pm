@@ -15,17 +15,11 @@ package Fuhbot::Plugin 0.1 {
     # build commands list
     $self->{commands} ||= do {
       my @commands;
-      for my $command ($self->commands) {
-        if (ref($command) eq "ARRAY") {
-          push @commands, $command;
-        }
-        else {
-          my $method = $command;
-          $command =~ s/_/ /g;
-          push @commands, [$command, sub { $self->$method(@_) }];
-        }
+      my %commands = $self->commands;
+      while (my ($command, $cb) = each %commands) {
+        push @commands, [$command, sub {$cb->($self, @_)}];
       }
-      [@commands];
+      \@commands;
     };
 
     return @{$self->{commands}};

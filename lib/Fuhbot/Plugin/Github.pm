@@ -7,9 +7,11 @@ package Fuhbot::Plugin::Github 0.1 {
   use AnyEvent::HTTP;
   use JSON::XS;
 
-  sub commands {qw/github_status/}
+  sub commands {
+    "github status" => sub {shift->status(@_)},
+  }
 
-  sub github_status {
+  sub status {
     my ($self, $irc, $chan) = @_;
     http_get "https://status.github.com/realtime.json" => sub {
       my ($body, $headers) = @_;

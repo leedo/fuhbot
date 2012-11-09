@@ -3,7 +3,10 @@ use v5.14;
 package Fuhbot::Plugin::Insult 0.1 {
   use parent 'Fuhbot::Plugin';
 
-  sub commands {qw/insult add_insult/}
+  sub commands {
+    qr{insult\s+([^\s]+)} => sub {shift->insult(@_)},
+    qr{add insult\s+(.+)} => sub {shift->add_insult(@_)},
+  }
 
   sub insult {
     my ($self, $irc, $chan, $nick) = @_;

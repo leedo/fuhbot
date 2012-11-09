@@ -12,10 +12,12 @@ package Fuhbot::Plugin::ChefClient 0.1 {
   }
 
   sub commands {
-    qw/deploy_cancel deploy_start deploy_status/
+    "deploy cancel" => sub { shift->cancel(@_) },
+    "deploy start"  => sub { shift->start(@_) },
+    "deploy status" => sub { shift->status(@_) },
   }
 
-  sub deploy_cancel {
+  sub cancel {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -27,7 +29,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   }
 
-  sub deploy_start {
+  sub start {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -35,11 +37,11 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
     else {
       $self->broadcast("starting deploy");
-      $self->spawn_deploy;
+      $self->spawn;
     }
   }
 
-  sub deploy_status {
+  sub status {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -56,7 +58,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     grep {/ERROR: /} @{$self->{lines}};
   }
 
-  sub spawn_deploy {
+  sub spawn {
     my $self = shift;
 
     $self->{lines} = [];

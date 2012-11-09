@@ -6,7 +6,9 @@ package Fuhbot::Plugin::Seen  0.1 {
   use AnyEvent::IRC::Util ();
   use JSON::XS ();
 
-  sub commands {qw/seen/}
+  sub commands {
+    qr{seen\s+([^\s]+)} => sub{shift->seen(@_)}
+  }
 
   sub irc_privmsg {
     my ($self, $irc, $msg) = @_;
