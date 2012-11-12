@@ -13,14 +13,37 @@ package Fuhbot::Plugin::Github 0.1 {
 
   sub status {
     my ($self, $irc, $chan) = @_;
+
+    my %headings = (
+      'good' => "\x033Battle station fully operational",
+      'minorproblem' => "\x037Partial service outage",
+      'majorproblem' => "\x034Major service outage",
+    ); 
+
+    http_get "https://status.github.com/status.json" => sub {
+      my ($body, $headers) = @_;
+      if ($headers->{Status} == 200) {
+        my $data = decode_json $body;
+        $irc->send_srv(PRIVMSG => $chan, $headings{$data->{status}});
+        for my $day (@{$data->{days}}) {
+          if ($day->{date} eq "Today") {
+            my @msgs = map  {s/<[^>]+>/ /g; $_}
+                       grep {$_}
+                       split "\n", $day->{message};
+            $irc->send_srv(PRIVMSG => $chan, $_) for @msgs;
+          }
+        }
+      }
+    };
+
     http_get "https://status.github.com/realtime.json" => sub {
       my ($body, $headers) = @_;
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
-        for my $service (keys %$data) {
-          my $msg = ($data->{$service} ? "\x033" : "\x034") . $service;
-          $irc->send_srv(PRIVMSG => $chan, $msg);
-        }
+        my $msg = join " \x03| ", map {
+          ($data->{$_} ? "\x033" : "\x034") . $_;
+        } keys %$data;
+        $irc->send_srv(PRIVMSG => $chan, $msg);
       }
     };
   }
