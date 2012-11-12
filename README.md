@@ -78,7 +78,9 @@ The following plugin responds to the line `fuhbot: insult lee`.
   package Fuhbot::Plugin::Insult 0.1 {
     use parent "Fuhbot::Plugin";
     
-    sub commands {qw/insult/}
+    sub commands {
+      insult => sub { shift->insult(@_) }
+    }
     
     sub insult {
       my ($self, $irc, $chan, $nick) = @_;
@@ -128,9 +130,12 @@ This plugin implements `quote random` and `quote add` commands.
 use v5.14;
 
 package Fuhbot::Plugin::Quote 0.1 {
-  sub commands {qw/quote_random quote_add/}
+  sub commands {
+    qr{quote random}   => sub { shift->random(@_) },
+    qr{quote add (.+)} => sub { shift->add(@_) },
+  }
 
-  sub quote_random {
+  sub random {
     my ($self, $irc, $chan) = @_;
     $self->brain->srandmember("quotes", sub {
       my $quote = shift;
@@ -138,7 +143,7 @@ package Fuhbot::Plugin::Quote 0.1 {
     });
   }
 
-  sub quote_add {
+  sub add {
     my ($self, $irc, $chan, $quote) = @_;
     $self->brain->sadd("quotes", $quote, sub {
       $irc->send_srv(PRIVMSG => $chan, "saved!");
