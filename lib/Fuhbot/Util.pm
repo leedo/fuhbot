@@ -5,10 +5,12 @@ package Fuhbot::Util 0.1 {
   use URI::Escape;
   use JSON::XS;
 
+  our $shorten_format = "http://is.gd/api.php?longurl=%s";
+
   sub shorten {
-    my ($url, $cb) = @_;
-    $url = uri_escape($url);
-    http_get "http://is.gd/api.php?longurl=$url", sub {
+    my ($long, $cb) = @_;
+    my $url = sprintf $shorten_format, uri_escape($long);
+    http_get $url, sub {
       my ($body, $headers) = @_;
       $headers->{Status} == 200 ? $cb->($body) : $cb->();
     }
