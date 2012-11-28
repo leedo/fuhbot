@@ -8,8 +8,11 @@ package Fuhbot::Util 0.1 {
   our $shorten_format = "http://is.gd/api.php?longurl=%s";
 
   sub shorten {
-    my ($long, $cb) = @_;
-    my $url = sprintf $shorten_format, uri_escape($long);
+    my $cb = pop;
+    my ($long, %args) = @_;
+    my $format = $args{shorten_format} || $shorten_format;
+    my $url = sprintf $format, uri_escape($long);
+
     http_get $url, sub {
       my ($body, $headers) = @_;
       $headers->{Status} == 200 ? $cb->($body) : $cb->();

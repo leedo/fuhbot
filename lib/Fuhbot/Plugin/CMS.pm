@@ -22,8 +22,8 @@ package Fuhbot::Plugin::CMS 0.1 {
 
     if ($payload) {
       my $data = decode_json $payload;
-      Fuhbot::Util::shorten $data->{url}, sub {
-        my $url = shift;
+      $self->shorten($data->{url}, sub {
+        my ($self, $url) = @_;
         my $color = do {
           given ($data->{type}) {
             when ("error") { 4 }
@@ -33,7 +33,7 @@ package Fuhbot::Plugin::CMS 0.1 {
         };
         my $message = IRC::Formatting::HTML::html_to_irc($data->{message});
         $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
-      };
+      });
     }
   }
 }

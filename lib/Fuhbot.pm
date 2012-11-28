@@ -175,10 +175,6 @@ package Fuhbot 0.1 {
     }
 
     $self->{config} = do $self->{config_file};
-
-    if (my $fmt = $self->{config}{shorten_format}) {
-      $Fuhbot::Util::shorten_format = $fmt;
-    }
   }
 
   sub ircs {

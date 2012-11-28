@@ -53,6 +53,15 @@ package Fuhbot::Plugin 0.1 {
     my ($self, $cb) = @_;
     $cb->() if $cb;
   }
+
+  sub shorten {
+    my $cb = pop;
+    my ($self, $url, %args) = @_;
+    if (my $fmt = $self->config("shorten_format")) {
+      $args{shorten_format} = $fmt;
+    }
+    Fuhbot::Util::shorten $url, %args, $cb; 
+  }
 }
 
 1;
