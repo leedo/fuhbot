@@ -23,7 +23,7 @@ package Fuhbot::Plugin::CMS 0.1 {
     if ($payload) {
       my $data = decode_json $payload;
       $self->shorten($data->{url}, sub {
-        my ($self, $url) = @_;
+        my $url = shift;
         my $color = do {
           given ($data->{type}) {
             when ("error") { 4 }

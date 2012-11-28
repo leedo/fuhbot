@@ -60,7 +60,7 @@ package Fuhbot::Plugin 0.1 {
     if (my $fmt = $self->config("shorten_format")) {
       $args{shorten_format} = $fmt;
     }
-    Fuhbot::Util::shorten $url, %args, $cb; 
+    Fuhbot::Util::shorten($url, %args, $cb);
   }
 }
 
