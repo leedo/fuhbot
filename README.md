@@ -30,8 +30,37 @@ This is a very simple config that loads the `Insult` plugin.
 }
 </pre>
 
+### limiting plugins to specific IRC networks
 
-## plugins
+To limit a plugin to a specific IRC network add an `ircs` key to
+it's configuration. The following configuration will only use the
+`Insult` plugin on the `perl` network.
+
+<pre>
+{
+  plugins => [
+    { name => "Insult",
+      ircs => [qw/perl/],
+    },
+  ],
+  ircs => [
+    { name => "perl",
+      host => "irc.perl.org",
+      port => 6667,
+      nick => "fuhbot",
+    },
+    { name => "freenode",
+      host => "irc.freenode.com",
+      port => 6667,
+      nick => "fuhbot",
+    },
+  ],
+}
+</pre>
+
+
+
+## writing plugins
 
 Plugins should inherit from `Fuhbot::Plugin`, and can use the
 `prepare_plugin` method to setup any attributes when the bot is
