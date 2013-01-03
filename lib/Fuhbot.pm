@@ -158,6 +158,8 @@ package Fuhbot 0.1 {
     for my $command ($self->commands($irc->name)) {
       my ($pattern, $cb) = @{$command};
       if (my @args = $text =~ m/^$pattern/) {
+        # ugh, if no captures in regex @args is (1)
+        @args = $1 ? @args : ();
         return $cb->($irc, $chan, @args);
       }
     }
