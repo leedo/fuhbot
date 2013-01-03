@@ -3,7 +3,7 @@ package Fuhbot::Plugin::IsItDown;
 use parent 'Fuhbot::Plugin';
 
 use AnyEvent::HTTP;
-use Mime::Base64 ();
+use MIME::Base64 ();
 
 sub commands {
   my $self = shift;
