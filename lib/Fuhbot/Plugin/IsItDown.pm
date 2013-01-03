@@ -25,7 +25,7 @@ sub isitdown {
   my %headers;
 
   if ($site =~ s{^https?://([^:]+:[^:]+)@}{}) {
-    $headers{Authorization} = "Basic " . MIME::Base64::encode_base64($1);
+    $headers{Authorization} = "Basic " . MIME::Base64::encode($1);
   }
 
   $site = "http://$site" unless $site =~ m{^https?://};
