@@ -53,17 +53,17 @@ package Fuhbot::Plugin::Seen  0.1 {
       my $hours   = int($seconds / $hour);
       if ($hours) {
         $seconds -= ($hours * $hour);
-        push @when, "$hours hours";
+        push @when, "$hours hour" . ($hours != 1 ? "s" : "");
       }
 
       my $minutes = int($seconds / $min);
       if ($minutes) {
         $seconds -= ($minutes * $min);
-        push @when, "$minutes minutes";
+        push @when, "$minutes minute" . ($minutes != 1 ? "s" : "");
       }
 
       if ($seconds) {
-        push @when, "$seconds seconds";
+        push @when, "$seconds second" . ($seconds != 1 ? "s" : "");
       }
       
       if (@when > 1) {
