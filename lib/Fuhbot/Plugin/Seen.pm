@@ -36,11 +36,47 @@ package Fuhbot::Plugin::Seen  0.1 {
       }
 
       my ($time, $message) = @{ JSON::XS::decode_json $data };
-      my @date = (localtime($time))[4,3,5,2,1];
-      $date[2] += 1900;
-      my $when = sprintf "on %02d/%02d/%02d at %02d:%02d", @date;
 
-      $irc->send_srv(PRIVMSG => $chan, "$nick was last seen in $chan $when");
+      my $min = 60;
+      my $hour = $min * 60;
+      my $day = $hour * 24;
+
+      my @when;
+      my $seconds = time - $time;
+
+      my $days    = int($seconds / $day);
+      if ($days) {
+        $seconds -= ($days * $day);
+        push @when, "$days days";
+      }
+      
+      my $hours   = int($seconds / $hour);
+      if ($hours) {
+        $seconds -= ($hours * $hour);
+        push @when, "$hours hours";
+      }
+
+      my $minutes = int($seconds / $min);
+      if ($minutes) {
+        $seconds -= ($minutes * $min);
+        push @when, "$minutes minutes";
+      }
+
+      if ($seconds) {
+        push @when, "$seconds seconds";
+      }
+      
+      if (@when > 1) {
+        $when[-1] = "and $when[-1]";
+      }
+      elsif (@when == 0) {
+        push @when, "0 seconds";
+      }
+
+
+      $irc->send_srv(PRIVMSG => $chan,
+        "$nick was last seen in $chan " . join(", ", @when) . " ago"
+      );
       $irc->send_srv(PRIVMSG => $chan, "< $nick> $message");
     });
   }
