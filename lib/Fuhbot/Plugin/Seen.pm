@@ -15,7 +15,7 @@ package Fuhbot::Plugin::Seen  0.1 {
     my $chan = $msg->{params}[0];
     my ($nick) = AnyEvent::IRC::Util::split_prefix $msg->{prefix};
     my $key = join "-", $nick, $chan, $irc->name;
-    $self->brain->set($key, JSON::XS::encode_json [time, $msg->{params}[-1]], sub {});
+    $self->brain->set(lc $key, JSON::XS::encode_json [time, $msg->{params}[-1]], sub {});
   }
 
   sub seen {
@@ -27,7 +27,7 @@ package Fuhbot::Plugin::Seen  0.1 {
     }
 
     my $key = join "-", $nick, $chan, $irc->name;
-    $self->brain->get($key, sub {
+    $self->brain->get(lc $key, sub {
       my ($data) = @_;
 
       if (!$data) {
