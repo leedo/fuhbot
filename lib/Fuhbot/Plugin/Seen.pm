@@ -15,7 +15,8 @@ package Fuhbot::Plugin::Seen  0.1 {
     my $chan = $msg->{params}[0];
     my ($nick) = AnyEvent::IRC::Util::split_prefix $msg->{prefix};
     my $key = join "-", $nick, $chan, $irc->name;
-    $self->brain->set(lc $key, JSON::XS::encode_json [time, $msg->{params}[-1]], sub {});
+    my $line = "< $nick> $msg->{params}[-1]";
+    $self->brain->set(lc $key, JSON::XS::encode_json [time, $line], sub {});
   }
 
   sub seen {
@@ -77,7 +78,7 @@ package Fuhbot::Plugin::Seen  0.1 {
       $irc->send_srv(PRIVMSG => $chan,
         "$nick was last seen in $chan " . join(", ", @when) . " ago"
       );
-      $irc->send_srv(PRIVMSG => $chan, "< $nick> $message");
+      $irc->send_srv(PRIVMSG => $chan, $message);
     });
   }
 }
