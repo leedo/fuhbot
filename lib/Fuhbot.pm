@@ -5,7 +5,7 @@ package Fuhbot 0.1 {
   use AnyEvent::IRC::Util;
   use Fuhbot::IRC;
   use AnyEvent::Redis;
-  use List::Util qw/first/;
+  use List::MoreUtils qw/any/;
 
   sub new {
     my ($class, @argv) = @_;
@@ -129,8 +129,9 @@ package Fuhbot 0.1 {
   sub irc_line {
     my ($self, $irc, $msg) = @_;
     my $method = lc "irc_$msg->{command}";
+    my $sender = AnyEvent::IRC::Util::prefix_nick $msg->{prefix};
 
-    for my $plugin ($self->plugins($irc->name)) {
+    for my $plugin ($self->plugins($irc->name, $sender)) {
       $plugin->$method($irc, $msg) if $plugin->can($method);
     }
   }
@@ -155,7 +156,7 @@ package Fuhbot 0.1 {
   sub handle_command {
     my ($self, $irc, $chan, $text) = @_;
 
-    for my $command ($self->commands($irc->name)) {
+    for my $command ($self->commands($irc->name, $chan)) {
       my ($pattern, $cb) = @{$command};
       if (my @args = $text =~ m/^$pattern/) {
         # ugh, if no captures in regex @args is (1)
@@ -166,8 +167,8 @@ package Fuhbot 0.1 {
   }
 
   sub commands {
-    my ($self, $network) = @_;
-    return map {$_->command_callbacks} $self->plugins($network);
+    my $self = shift;
+    return map {$_->command_callbacks} $self->plugins(@_);
   }
 
   sub load_config {
@@ -184,16 +185,19 @@ package Fuhbot 0.1 {
     return @{$self->{ircs}} unless $networks;
     grep {
       my $n = $_->name;
-      first {$_ eq $n} @$networks
+      any {$_ eq $n} @$networks
     } @{$self->{ircs}}
   }
 
   sub plugins {
-    my ($self, $network) = @_;
+    my ($self, $network, $chan) = @_;
     return @{$self->{plugins}} unless $network;
     grep {
       my $i = $_->config("ircs");
-      !$i || first {$_ eq $network} @{$i}
+      !$i || any {
+        lc $_->[0] eq lc $network
+          && (!$chan || (!$_->[1] || lc $_->[1] eq lc $chan))
+      } map {[split "@", $_]} @$i;
     } @{$self->{plugins}};
   }
 

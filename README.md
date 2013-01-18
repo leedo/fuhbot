@@ -30,17 +30,20 @@ This is a very simple config that loads the `Insult` plugin.
 }
 </pre>
 
-### limiting plugins to specific IRC networks
+### limiting plugins to specific IRC networks and channels
 
 To limit a plugin to a specific IRC network add an `ircs` key to
-it's configuration. The following configuration will only use the
-`Insult` plugin on the `perl` network.
+it's configuration. Additionally, plugins can be limited by channel
+with a trailing `@#channel` after the IRC network name.
+
+The following configuration will only use the `Insult` plugin in
+`#plack` on the `perl` network.
 
 <pre>
 {
   plugins => [
     { name => "Insult",
-      ircs => [qw/perl/],
+      ircs => [qw/perl@#plack/],
     },
   ],
   ircs => [
