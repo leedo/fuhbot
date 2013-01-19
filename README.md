@@ -33,7 +33,7 @@ This is a very simple config that loads the `Insult` plugin.
 ### limiting plugins to specific IRC networks and channels
 
 To limit a plugin to a specific IRC network add an `ircs` key to
-it's configuration. Additionally, plugins can be limited by channel
+its configuration. Additionally, plugins can be limited by channel
 with a trailing `@#channel` after the IRC network name.
 
 The following configuration will only use the `Insult` plugin in
