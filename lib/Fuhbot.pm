@@ -5,6 +5,7 @@ package Fuhbot 0.1 {
   use AnyEvent::IRC::Util;
   use Fuhbot::IRC;
   use AnyEvent::Redis;
+  use List::Util qw/first/;
   use List::MoreUtils qw/any/;
 
   sub new {
@@ -129,9 +130,10 @@ package Fuhbot 0.1 {
   sub irc_line {
     my ($self, $irc, $msg) = @_;
     my $method = lc "irc_$msg->{command}";
-    my $sender = AnyEvent::IRC::Util::prefix_nick $msg->{prefix};
+    # awful method of finding channel name... better?
+    my $chan = first {$irc->is_channel_name($_)} @{$msg->{params}};
 
-    for my $plugin ($self->plugins($irc->name, $sender)) {
+    for my $plugin ($self->plugins($irc->name, $chan)) {
       $plugin->$method($irc, $msg) if $plugin->can($method);
     }
   }
