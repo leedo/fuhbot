@@ -1,7 +1,7 @@
 use v5.14;
 
 package Fuhbot::Plugin::Parsely 0.1 {
-  use parent 'Fuhbot::Plugin';
+  use Fuhbot::Plugin;
   use AnyEvent::HTTP;
   use JSON::XS;
 

@@ -1,7 +1,7 @@
 use v5.14;
 
 package Fuhbot::Plugin::URLTitle {
-  use parent 'Fuhbot::Plugin';
+  use Fuhbot::Plugin;
 
   use AnyEvent::IRC::Util;
   use AnyEvent::HTTP;

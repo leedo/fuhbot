@@ -1,13 +1,23 @@
 use v5.14;
 
 package Fuhbot::Plugin 0.1 {
+  sub import {
+    my ($package) = caller;
+    return if $package eq "Fuhbot";
+    no strict "refs";
+    no warnings 'redefine';
+    push @{"$package\::ISA"}, "Fuhbot::Plugin";
+    @{"$package\::COMMANDS"} = ();
+    *{"$package\::command"}  = sub { push @{"$package\::COMMANDS"}, @_ };
+    *{"$package\::commands"} = sub { return @{"$package\::COMMANDS"} };
+  }
+
   sub new {
     my $class = shift;
     bless {@_}, $class;
   }
 
   sub prepare_plugin {}
-  sub commands {()}
 
   sub command_callbacks {
     my $self = shift;

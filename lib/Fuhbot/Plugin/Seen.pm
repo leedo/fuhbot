@@ -1,14 +1,10 @@
 use v5.14;
 
 package Fuhbot::Plugin::Seen  0.1 {
-  use parent 'Fuhbot::Plugin';
-
+  use Fuhbot::Plugin;
   use AnyEvent::IRC::Util ();
   use JSON::XS ();
 
-  sub commands {
-    qr{seen\s+([^\s]+)} => sub{shift->seen(@_)}
-  }
 
   sub irc_privmsg {
     my ($self, $irc, $msg) = @_;
@@ -19,7 +15,7 @@ package Fuhbot::Plugin::Seen  0.1 {
     $self->brain->set(lc $key, JSON::XS::encode_json [time, $line], sub {});
   }
 
-  sub seen {
+  command qr{seen\s+([^\s]+)} => sub{
     my ($self, $irc, $chan, $nick) = @_;
 
     if (!$nick) {
@@ -80,7 +76,7 @@ package Fuhbot::Plugin::Seen  0.1 {
       );
       $irc->send_srv(PRIVMSG => $chan, $message);
     });
-  }
+  };
 }
 
 1;

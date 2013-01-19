@@ -1,17 +1,13 @@
 use v5.14;
 
 package Fuhbot::Plugin::Github 0.1 {
-  use parent 'Fuhbot::Plugin';
+  use Fuhbot::Plugin;
   use Fuhbot::Util;
   use Fuhbot::HTTPD;
   use AnyEvent::HTTP;
   use JSON::XS;
 
-  sub commands {
-    "github status" => sub {shift->status(@_)},
-  }
-
-  sub status {
+  command "github status" => sub {
     my ($self, $irc, $chan) = @_;
 
     my %headings = (
@@ -46,7 +42,7 @@ package Fuhbot::Plugin::Github 0.1 {
         $irc->send_srv(PRIVMSG => $chan, $msg);
       }
     };
-  }
+  };
 
   sub prepare_plugin {
     my $self = shift;

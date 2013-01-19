@@ -1,39 +1,29 @@
-package Fuhbot::Plugin::IsItDown;
+use v5.14;
 
-use parent 'Fuhbot::Plugin';
+package Fuhbot::Plugin::IsItDown 0.1 {
+  use Fuhbot::Plugin;
+  use AnyEvent::HTTP;
+  use MIME::Base64 ();
 
-use AnyEvent::HTTP;
-use MIME::Base64 ();
+  command qr{isitdown (.+)} => sub {
+    my ($self, $irc, $chan, $site) = @_;
+    my %headers;
 
-sub commands {
-  my $self = shift;
-  my %sites = %{ $self->config("sites") || {} };
+    if (my $map = ($site->config("sites") || {})->{$site}) {
+      $site = $map;
+    }
 
-  (
-    qr{isitdown (.+)} => sub { shift->isitdown(@_) },
-    map {
-      my $k = $_;
-      "is$k"."down" => sub {
-        shift->isitdown(@_, $sites{$k})
-      }
-    } keys %sites,
-  );
-}
+    if ($site =~ s{^https?://([^:]+:[^:]+)@}{}) {
+      $headers{Authorization} = "Basic " . MIME::Base64::encode($1);
+    }
 
-sub isitdown {
-  my ($self, $irc, $chan, $site) = @_;
-  my %headers;
+    $site = "http://$site" unless $site =~ m{^https?://};
 
-  if ($site =~ s{^https?://([^:]+:[^:]+)@}{}) {
-    $headers{Authorization} = "Basic " . MIME::Base64::encode($1);
-  }
-
-  $site = "http://$site" unless $site =~ m{^https?://};
-
-  http_get $site, headers => \%headers, sub {
-    my (undef, $headers) = @_;
-    my $state = $headers->{Status} == 200 ? "up" : "down ($headers->{Reason})";
-    $irc->send_srv(PRIVMSG => $chan, "$site is $state");
+    http_get $site, headers => \%headers, sub {
+      my (undef, $headers) = @_;
+      my $state = $headers->{Status} == 200 ? "up" : "down ($headers->{Reason})";
+      $irc->send_srv(PRIVMSG => $chan, "$site is $state");
+    };
   };
 }
 

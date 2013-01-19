@@ -1,14 +1,9 @@
 use v5.14;
 
 package Fuhbot::Plugin::Insult 0.1 {
-  use parent 'Fuhbot::Plugin';
+  use Fuhbot::Plugin;
 
-  sub commands {
-    qr{insult\s+([^\s]+)} => sub {shift->insult(@_)},
-    qr{add insult\s+(.+)} => sub {shift->add_insult(@_)},
-  }
-
-  sub insult {
+  command qr{insult\s+([^\s]+)} => sub {
     my ($self, $irc, $chan, $nick) = @_;
 
     $nick ||= $chan;
@@ -19,14 +14,14 @@ package Fuhbot::Plugin::Insult 0.1 {
       my $insult = $_[0] || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
     });
-  }
+  };
 
-  sub add_insult {
+  command qr{add insult\s+(.+)} sub {
     my ($self, $irc, $chan, $insult) = @_;
     $self->brain->sadd("insults", $insult, sub {
       $irc->send_srv(PRIVMSG => $chan, "ok!");
     });
-  }
+  };
 }
 
 1;

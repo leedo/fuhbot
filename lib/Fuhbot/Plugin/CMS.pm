@@ -1,7 +1,7 @@
 use v5.14;
 
 package Fuhbot::Plugin::CMS 0.1 {
-  use parent 'Fuhbot::Plugin';
+  use Fuhbot::Plugin;
   use Fuhbot::HTTPD;
   use Fuhbot::Util;
   use IRC::Formatting::HTML;
