@@ -2,6 +2,7 @@ use v5.14;
 
 package Fuhbot::Plugin::Seen  0.1 {
   use Fuhbot::Plugin;
+  use Fuhbot::Util;
   use AnyEvent::IRC::Util ();
   use JSON::XS ();
 
@@ -33,46 +34,10 @@ package Fuhbot::Plugin::Seen  0.1 {
       }
 
       my ($time, $message) = @{ JSON::XS::decode_json $data };
-
-      my $min = 60;
-      my $hour = $min * 60;
-      my $day = $hour * 24;
-
-      my @when;
-      my $seconds = time - $time;
-
-      my $days    = int($seconds / $day);
-      if ($days) {
-        $seconds -= ($days * $day);
-        push @when, "$days days";
-      }
-      
-      my $hours   = int($seconds / $hour);
-      if ($hours) {
-        $seconds -= ($hours * $hour);
-        push @when, "$hours hour" . ($hours != 1 ? "s" : "");
-      }
-
-      my $minutes = int($seconds / $min);
-      if ($minutes) {
-        $seconds -= ($minutes * $min);
-        push @when, "$minutes minute" . ($minutes != 1 ? "s" : "");
-      }
-
-      if ($seconds) {
-        push @when, "$seconds second" . ($seconds != 1 ? "s" : "");
-      }
-      
-      if (@when > 1) {
-        $when[-1] = "and $when[-1]";
-      }
-      elsif (@when == 0) {
-        push @when, "0 seconds";
-      }
-
+      my $when = Fuhbot::Util::timeago($time);
 
       $irc->send_srv(PRIVMSG => $chan,
-        "$nick was last seen in $chan " . join(", ", @when) . " ago"
+        "$nick was last seen in $chan $when"
       );
       $irc->send_srv(PRIVMSG => $chan, $message);
     });
