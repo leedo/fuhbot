@@ -65,7 +65,9 @@ package Fuhbot::Plugin::Github 0.1 {
       for my $commit (reverse @{$data->{commits}}) {
         Fuhbot::Util::shorten $commit->{url}, sub {
           my $url = shift;
-          $self->broadcast("[$repo $branch] $commit->{message} ($commit->{author}{name}) - $url");
+          my ($line, @lines) = split "\n", $commit->{message};
+          $self->broadcast("[$repo $branch] $line ($commit->{author}{name}) - $url");
+          $self->broadcast("                $_") for @lines;
         };
       }
     }
