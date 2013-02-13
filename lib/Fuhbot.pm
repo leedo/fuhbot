@@ -200,7 +200,7 @@ package Fuhbot 0.1 {
       !$i || any {
         lc $_->[0] eq lc $network
           && (!$chan || (!$_->[1] || lc $_->[1] eq lc $chan))
-      } map {[split "@", $_]} @$i;
+      } map {[split "@"]} @$i;
     } @{$self->{plugins}};
   }
 
