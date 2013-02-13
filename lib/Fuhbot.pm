@@ -65,8 +65,9 @@ package Fuhbot 0.1 {
 
   sub broadcast {
     my ($self, $msg, $networks) = @_;
-    for my $irc ($self->ircs($networks)) {
-      $irc->broadcast($msg);
+    my %map = map {my ($n, @c) = split "@"; lc $n, \@c} @$networks;
+    for my $irc ($self->ircs(keys %map)) {
+      $irc->broadcast($msg, $map{lc $irc->name});
     }
   }
 
@@ -187,7 +188,7 @@ package Fuhbot 0.1 {
     return @{$self->{ircs}} unless $networks;
     grep {
       my $n = $_->name;
-      any {$_ eq $n} @$networks
+      any {lc $_ eq lc $n} @$networks
     } @{$self->{ircs}}
   }
 

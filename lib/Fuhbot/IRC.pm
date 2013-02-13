@@ -69,9 +69,9 @@ package Fuhbot::IRC 0.1 {
   }
 
   sub broadcast {
-    my ($self, $msg) = @_;
-    my $channels = $self->channel_list;
-    for my $channel (keys %$channels) {
+    my ($self, $msg, $channels) = @_;
+    my $channels ||= [keys %{$self->channel_list}];
+    for my $channel (@$channels) {
       $self->send_srv(PRIVMSG => $channel, $msg);
     }
   }
