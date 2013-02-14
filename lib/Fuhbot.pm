@@ -71,11 +71,6 @@ package Fuhbot 0.1 {
     }
   }
 
-  sub broadcast_cb {
-    my $self = shift;
-    $self->{broadcast_cb} ||= sub {$self->broadcast(@_)};
-  }
-
   sub load_ircs {
     my $self = shift;
     for my $config (@{$self->config("ircs")}) {
@@ -102,10 +97,12 @@ package Fuhbot 0.1 {
     eval "use $class";
     die $@ if $@;
     
+    $self->{broadcast_cb} ||= sub {$self->broadcast(@_)};
+
     my $plugin = $class->new(
       config    => $config,
       brain     => $self->{brain},
-      broadcast => $self->broadcast_cb,
+      broadcast => $self->{broadcast_cb},
     );
 
     $plugin->prepare_plugin;
