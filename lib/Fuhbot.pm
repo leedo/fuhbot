@@ -65,7 +65,8 @@ package Fuhbot 0.1 {
 
   sub broadcast {
     my ($self, $msg, $networks) = @_;
-    my %map = map {my ($n, @c) = split "@"; lc $n, @c ? \@c : undef} @$networks;
+    $networks = [ map {$_->name} $self->ircs ] unless defined $networks;
+    my %map = map {my ($n, @c) = split "@"; lc $n, @c ? \@c : undef} @{$networks};
     for my $irc ($self->ircs([keys %map])) {
       $irc->broadcast($msg, $map{lc $irc->name});
     }
