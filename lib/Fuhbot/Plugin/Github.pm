@@ -67,7 +67,7 @@ package Fuhbot::Plugin::Github 0.1 {
           my $url = shift;
           my ($line, @lines) = split "\n", $commit->{message};
           $self->broadcast("[$repo $branch] $line ($commit->{author}{name}) - $url");
-          $self->broadcast("                $_") for @lines;
+          $self->broadcast("    $_") for grep {$_} @lines;
         };
       }
     }
