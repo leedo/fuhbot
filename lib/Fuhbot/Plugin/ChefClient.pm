@@ -7,17 +7,10 @@ package Fuhbot::Plugin::ChefClient 0.1 {
 
   sub prepare_plugin {
     my $self = shift;
-    $self->{command} = $self->config("command") || "chef-client";
     $self->{lines}  = [];
   }
 
-  sub commands {
-    "deploy cancel" => sub { shift->cancel(@_) },
-    "deploy start"  => sub { shift->start(@_) },
-    "deploy status" => sub { shift->status(@_) },
-  }
-
-  sub cancel {
+  command "deplay cancel" => sub {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -27,9 +20,9 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     else {
       $irc->send_srv(PRIVMSG => $chan, "no deploy in progress");
     }
-  }
+  };
 
-  sub start {
+  command "deploy start" => sub {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -39,9 +32,9 @@ package Fuhbot::Plugin::ChefClient 0.1 {
       $self->broadcast("starting deploy");
       $self->spawn;
     }
-  }
+  };
 
-  sub status {
+  command "deploy status" => sub {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -51,7 +44,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     else {
       $irc->send_srv(PRIVMSG => $chan, "idle");
     }
-  }
+  };
 
   sub errors {
     my $self = shift;
@@ -64,7 +57,9 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{lines} = [];
     $self->{time} = time;
 
-    $self->{cv} = AnyEvent::Util::run_cmd $self->{command},
+    my $command = $self->config("command") || "chef-client";
+
+    $self->{cv} = AnyEvent::Util::run_cmd $command,
       '>' => sub {
         my @lines = split "\n", shift;
         $self->broadcast(map {"\x034\02$_"} grep {/ERROR: /} @lines);
