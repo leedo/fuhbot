@@ -2,17 +2,16 @@
   plugins => [
     {
       name => "Github",
-      port => 9091,
     },
     {
       name => "Jenkins",
-      port => 9091,
       url  => "http://localhost/",
     },
     {
       name => "Insult",
     },
   ],
+  listen => "http://0.0.0.0/9091",
   ircs => [
     {
       name => "perl",

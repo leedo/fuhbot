@@ -14,8 +14,18 @@ package Fuhbot 0.1 {
     die "config required" unless $file;
 
     my $config = do $file;
-    my $httpd = AnyEvent::HTTPD->new(port => $config->{http_port} || 9091);
     my $redis = AnyEvent::Redis->new(on_error => sub {warn @_});
+
+    my $listen = $config->{listen} || "http://0.0.0.0:9091";
+    my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
+
+    my $httpd = AnyEvent::HTTPD->new(
+      ssl  => $proto eq "https",
+      host => $host,
+      port => $port,
+    );
+
+    say "listening at $listen";
 
     bless {
       ircs     => [],
@@ -39,8 +49,6 @@ package Fuhbot 0.1 {
 
     say "loading ircs...";
     $self->load_ircs;
-
-    say "listening at http://" . $self->{httpd}->host . ":" . $self->{httpd}->port;
 
     $self->{cv}->recv;
     $self->cleanup;
