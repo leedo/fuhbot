@@ -120,7 +120,7 @@ The following plugin responds to the line `fuhbot: insult lee`.
 
 Plugins also have access to an HTTP server. This can be useful for
 responding to hooks from services such as Github. This example plugin
-creates an HTTP server and broadcasts a message when `/toot` is
+creates an HTTP handler and broadcasts a message when `/toot` is
 requested.
 
 <pre>
@@ -128,17 +128,12 @@ requested.
 
   package Fuhbot::Plugin::Toot 0.1 {
     use Fuhbot::Plugin;
-    use Fuhbot::HTTPD;
 
-    sub prepare_plugin {
-      my $self = shift;
-      $self->{httpd} = Fuhbot::HTTPD->new(8080);
-      $self->{httpd}->reg_cb("/toot", sub {
-        my ($httpd, $req) = @_;
-        $req->respond(["text/plain", "toot!"]);
-        $self->broadcast("Someone tooted.");
-      });
-    }
+    get "/toot" => sub {
+      my ($self, $req) = @_;
+      $req->respond(["text/plain", "toot!"]);
+      $self->broadcast("Someone tooted.");
+    };
   }
 
   1;
