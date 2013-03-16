@@ -6,7 +6,7 @@ fuhbot is a simple IRC bot with a administrative console and plugin
 system.  Plugins have access to IRC events and can broadcast messages
 to all channels.
 
-## config
+## Configuration
 
 The config file is perl. The last statement must return a hash
 reference.  This hash should contain a `plugins` key with a list
@@ -30,7 +30,7 @@ This is a very simple config that loads the `Insult` plugin.
 }
 </pre>
 
-### limiting plugins to specific IRC networks and channels
+### Limiting plugins to specific IRC networks and channels
 
 To limit a plugin to a specific IRC network add an `ircs` key to
 its configuration. Additionally, plugins can be limited by channel
@@ -63,7 +63,7 @@ The following configuration will only use the `Insult` plugin in
 
 
 
-## writing plugins
+## Writing plugins
 
 Plugins should inherit from `Fuhbot::Plugin`, and can use the
 `prepare_plugin` method to setup any attributes when the bot is
@@ -137,7 +137,7 @@ requested.
   1;
 </pre>
 
-### saving state
+### Saving state
 
 Plugins have a `brain` method that gives access to a Redis client.
 This should be used to save all non-configuration related state.
@@ -167,7 +167,7 @@ package Fuhbot::Plugin::Quote 0.1 {
 1;
 </pre>
 
-## console
+## Accessing the console
 
 When the bot is started a unix socket is created. Any perl statements
 sent to the socket will be evaluated. `bin/console` provides a
