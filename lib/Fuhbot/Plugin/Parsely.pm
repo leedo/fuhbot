@@ -13,8 +13,9 @@ package Fuhbot::Plugin::Parsely 0.1 {
          and defined $self->config("key");
 
     $self->{top_author} = "";
-    $self->{interval} = $self->config("interval") || 60 * 5;
-    $self->{timer} = AE::timer $self->{interval}, $self->{interval}, sub {
+
+    my $interval = $self->config("interval") || 60 * 5;
+    $self->{timer} = AE::timer $interval, $interval, sub {
       $self->check_parsely;
     };
   }
