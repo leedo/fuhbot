@@ -67,13 +67,8 @@ package Fuhbot 0.1 {
       $irc->shutdown(sub { $cv->end });
     }
 
-    for my $plugin ($self->plugins) {
-      $cv->begin;
-      $plugin->shutdown(sub { $cv->end });
-    }
-
     my $t = AE::timer 5, 0, sub {
-      $cv->croak("timed out shutting down plugins");
+      $cv->croak("timed out disconnecting from IRCs");
     };
 
     $cv->recv;
