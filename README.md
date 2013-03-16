@@ -11,7 +11,8 @@ to all channels.
 The config file is perl. The last statement must return a hash
 reference.  This hash should contain a `plugins` key with a list
 of plugins to load, and an `ircs` key with a list of IRC servers
-to connect to.
+to connect to. The `listen` key configures where the HTTPD will
+listen for requests.
 
 This is a very simple config that loads the `Insult` plugin.
 
@@ -27,6 +28,7 @@ This is a very simple config that loads the `Insult` plugin.
       nick => "fuhbot",
     }
   ],
+  listen => "http://127.0.0.1:9091",
 }
 </pre>
 
