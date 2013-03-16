@@ -7,14 +7,14 @@ package Fuhbot::Plugin::Seen  0.1 {
   use JSON::XS ();
 
 
-  sub irc_privmsg {
+  event privmsg => sub {
     my ($self, $irc, $msg) = @_;
     my $chan = $msg->{params}[0];
     my ($nick) = AnyEvent::IRC::Util::split_prefix $msg->{prefix};
     my $key = join "-", $nick, $chan, $irc->name;
     my $line = "< $nick> $msg->{params}[-1]";
     $self->brain->set(lc $key, JSON::XS::encode_json [time, $line], sub {});
-  }
+  };
 
   command qr{seen\s+([^\s]+)} => sub{
     my ($self, $irc, $chan, $nick) = @_;

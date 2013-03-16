@@ -9,7 +9,7 @@ package Fuhbot::Plugin::URLTitle {
   use IRC::Formatting::HTML;
   use Encode;
 
-  sub irc_privmsg {
+  event privmsg => sub {
     my ($self, $irc, $msg) = @_;
     my ($chan, $text) = @{$msg->{params}};
     if ($text =~ m{(https?://[^\s]+)}) {
@@ -28,7 +28,7 @@ package Fuhbot::Plugin::URLTitle {
         }
       }
     }
-  }
+  };
 }
 
 1;

@@ -15,12 +15,13 @@ package Fuhbot 0.1 {
 
     my $config = do $file;
     my $httpd = AnyEvent::HTTPD->new(port => $config->{http_port} || 9091);
+    my $redis = AnyEvent::Redis->new(on_error => sub {warn @_});
 
     bless {
       ircs     => [],
       plugins  => [],
       config   => {},
-      brain    => AnyEvent::Redis->new,
+      brain    => $redis,
       httpd    => $httpd,
       config   => $config,
     }, $class;
@@ -82,7 +83,7 @@ package Fuhbot 0.1 {
     my $self = shift;
     for my $config (@{$self->config("ircs")}) {
       my $irc = Fuhbot::IRC->new($config);
-      $irc->reg_cb("irc_*" => sub { $self->irc_line(@_) });
+      $irc->reg_cb("irc_*" => sub { $self->handle_irc_line(@_) });
       $irc->reg_cb("publicmsg" => sub { $self->channel_msg(@_) });
       $irc->reg_cb("privatemsg" => sub { $self->private_msg(@_) });
       $irc->connect;
@@ -132,17 +133,6 @@ package Fuhbot 0.1 {
     }
   }
 
-  sub irc_line {
-    my ($self, $irc, $msg) = @_;
-    my $method = lc "irc_$msg->{command}";
-    # awful method of finding channel name... better?
-    my $chan = first {$irc->is_channel_name($_)} @{$msg->{params}};
-
-    for my $plugin ($self->plugins($irc->name, $chan)) {
-      $plugin->$method($irc, $msg) if $plugin->can($method);
-    }
-  }
-
   sub channel_msg {
     my ($self, $irc, $chan, $msg) = @_;
     my $text = $msg->{params}[-1];
@@ -158,6 +148,19 @@ package Fuhbot 0.1 {
     my $text = $msg->{params}[-1];
     my $sender = AnyEvent::IRC::Util::prefix_nick $msg->{prefix};
     $self->handle_command($irc, $sender, $text);
+  }
+
+  sub handle_irc_line {
+    my ($self, $irc, $msg) = @_;
+    # XXX awful method of finding channel name... better?
+    my $chan = first {$irc->is_channel_name($_)} @{$msg->{params}};
+
+    for my $event ($self->events($irc->name, $chan)) {
+      my ($plugin, $event, $cb) = @$event;
+      if (lc $msg->{command} eq $event) {
+        $cb->($plugin, $irc, $msg);
+      }
+    }
   }
 
   sub handle_http_req {
@@ -184,6 +187,12 @@ package Fuhbot 0.1 {
         return $cb->($plugin, $irc, $chan, @args);
       }
     }
+  }
+
+  sub events {
+    my $self = shift;
+    my $p;
+    return map {$p = $_; map {[$p, @$_]} $p->events} $self->plugins(@_);
   }
 
   sub routes {
