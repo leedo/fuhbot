@@ -4,19 +4,25 @@ package Fuhbot 0.1 {
   use AnyEvent;
   use AnyEvent::IRC::Util;
   use Fuhbot::IRC;
+  use AnyEvent::HTTPD;
   use AnyEvent::Redis;
   use List::Util qw/first/;
   use List::MoreUtils qw/any/;
 
   sub new {
-    my ($class, @argv) = @_;
-    die "config must passed in as the first arg" unless @argv;
+    my ($class, $file) = @_;
+    die "config required" unless $file;
+
+    my $config = do $file;
+    my $httpd = AnyEvent::HTTPD->new(port => $config->{http_port} || 9091);
+
     bless {
       ircs     => [],
       plugins  => [],
       config   => {},
       brain    => AnyEvent::Redis->new,
-      config_file => $argv[0],
+      httpd    => $httpd,
+      config   => $config,
     }, $class;
   }
 
@@ -25,14 +31,15 @@ package Fuhbot 0.1 {
     $self->{cv} = AE::cv;
     my $sigs = AE::signal INT => sub { $self->shutdown };
 
-    say "loading config...";
-    $self->load_config;
+    $self->{httpd}->reg_cb("" => sub { $self->handle_http_req(@_) });
 
     say "loading plugins...";
     $self->load_plugins;
 
     say "loading ircs...";
     $self->load_ircs;
+
+    say "listening at http://" . $self->{httpd}->host . ":" . $self->{httpd}->port;
 
     $self->{cv}->recv;
     $self->cleanup;
@@ -153,31 +160,42 @@ package Fuhbot 0.1 {
     $self->handle_command($irc, $sender, $text);
   }
 
+  sub handle_http_req {
+    my ($self, $httpd, $req) = @_;
+    my $url = $req->url->path_query;
+    for my $route ($self->routes) {
+      my ($plugin, $method, $pattern, $cb) = @$route;
+      if (lc $req->method eq $method and $url =~ m{^$pattern}) {
+        $cb->($plugin, $req);
+        return;
+      }
+    }
+    $req->respond([404, "not found", {"Content-Type" => "text/plain"}, 'not found']);
+  }
+
   sub handle_command {
     my ($self, $irc, $chan, $text) = @_;
 
     for my $command ($self->commands($irc->name, $chan)) {
-      my ($pattern, $cb) = @{$command};
-      if (my @args = $text =~ m/^$pattern/) {
+      my ($plugin, $pattern, $cb) = @{$command};
+      if (my @args = $text =~ m{^$pattern}) {
         # ugh, if no captures in regex @args is (1)
         @args = $1 ? @args : ();
-        return $cb->($irc, $chan, @args);
+        return $cb->($plugin, $irc, $chan, @args);
       }
     }
   }
 
-  sub commands {
+  sub routes {
     my $self = shift;
-    return map {$_->command_callbacks} $self->plugins(@_);
+    my $p;
+    return map {$p = $_; map {[$p, @$_]} $p->routes} $self->plugins;
   }
 
-  sub load_config {
+  sub commands {
     my $self = shift;
-    if (!-r $self->{config_file}) {
-      die "config file is not readable";
-    }
-
-    $self->{config} = do $self->{config_file};
+    my $p;
+    return map {$p = $_; map {[$p, @$_]} $p->commands} $self->plugins(@_);
   }
 
   sub ircs {

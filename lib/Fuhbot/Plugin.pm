@@ -8,8 +8,13 @@ package Fuhbot::Plugin 0.1 {
     no warnings 'redefine';
     push @{"$package\::ISA"}, "Fuhbot::Plugin";
     @{"$package\::COMMANDS"} = ();
-    *{"$package\::command"}  = sub { push @{"$package\::COMMANDS"}, @_ };
+    *{"$package\::command"}  = sub { push @{"$package\::COMMANDS"}, [@_] };
     *{"$package\::commands"} = sub { return @{"$package\::COMMANDS"} };
+
+    @{"$package\::ROUTES"} = ();
+    *{"$package\::get"} = sub { push @{"$package\::ROUTES"}, [get => @_] };
+    *{"$package\::post"} = sub { push @{"$package\::ROUTES"}, [ post => @_] };
+    *{"$package\::routes"} = sub { return @{"$package\::ROUTES"} };
   }
 
   sub new {
@@ -18,22 +23,6 @@ package Fuhbot::Plugin 0.1 {
   }
 
   sub prepare_plugin {}
-
-  sub command_callbacks {
-    my $self = shift;
-
-    # build commands list
-    $self->{commands} ||= do {
-      my @commands;
-      my %commands = $self->commands;
-      while (my ($command, $cb) = each %commands) {
-        push @commands, [$command, sub {$cb->($self, @_)}];
-      }
-      \@commands;
-    };
-
-    return @{$self->{commands}};
-  }
 
   sub name {
     my $self = shift;

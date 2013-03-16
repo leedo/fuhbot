@@ -2,20 +2,12 @@ use v5.14;
 
 package Fuhbot::Plugin::CMS 0.1 {
   use Fuhbot::Plugin;
-  use Fuhbot::HTTPD;
   use Fuhbot::Util;
   use IRC::Formatting::HTML;
   use JSON::XS;
-  
-  sub prepare_plugin {
-    my $self = shift;
-    my $port = $self->config("port") || 9091;
-    $self->{httpd} = Fuhbot::HTTPD->new($port);
-    $self->{guard} = $self->{httpd}->reg_cb("/cms" => sub { $self->handle_req(@_) });
-  }
-
-  sub handle_req {
-    my ($self, $httpd, $req) = @_;
+ 
+  post "/cms" => sub {
+    my ($self, $req) = @_;
 
     $req->respond({ content => ["text/plain", "o ok"] });
     my $payload = $req->parm("payload");
@@ -35,7 +27,7 @@ package Fuhbot::Plugin::CMS 0.1 {
         $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
       });
     }
-  }
+  };
 }
 
 1;

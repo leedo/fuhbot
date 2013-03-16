@@ -3,7 +3,6 @@ use v5.14;
 package Fuhbot::Plugin::Github 0.1 {
   use Fuhbot::Plugin;
   use Fuhbot::Util;
-  use Fuhbot::HTTPD;
   use AnyEvent::HTTP;
   use JSON::XS;
 
@@ -44,15 +43,8 @@ package Fuhbot::Plugin::Github 0.1 {
     };
   };
 
-  sub prepare_plugin {
-    my $self = shift;
-    my $port = $self->config("port") || 9091;
-    $self->{httpd} = Fuhbot::HTTPD->new($port);
-    $self->{guard} = $self->{httpd}->reg_cb("/github" => sub { $self->handle_req(@_) });
-  }
-
-  sub handle_req {
-    my ($self, $httpd, $req) = @_;
+  get "/github" => sub {
+    my ($self, $req) = @_;
 
     $req->respond({ content => ["text/plain", "o ok"] });
     my $payload = $req->parm("payload");
@@ -71,7 +63,7 @@ package Fuhbot::Plugin::Github 0.1 {
         };
       }
     }
-  }
+  };
 }
 
 1;
