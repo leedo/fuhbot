@@ -71,9 +71,7 @@ started.
 
 ### IRC events
 
-Any methods prefixed with `irc_` will be treated as IRC event
-handlers (e.g. `irc_001` responds to the 001 event). The method
-will recieve the IRC client and parsed message as arguments.
+Use the `event` function to register IRC event handlers.
 
 This plugin will broadcast a message whenever a topic is changed.
 
@@ -83,11 +81,11 @@ This plugin will broadcast a message whenever a topic is changed.
   package Fuhbot::Plugin::Topic 0.1 {
     use Fuhbot::Plugin;
 
-    sub irc_topic {
+    event topic => sub {
       my ($self, $irc, $msg) = @_;
       my ($channel, $topic) = @{$msg->{params}};
       $self->broadcast("$channel has a new topic! $topic");
-    }
+    };
   }
 
   1;
