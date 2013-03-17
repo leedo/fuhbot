@@ -6,6 +6,7 @@ package Fuhbot 0.1 {
   use Fuhbot::IRC;
   use AnyEvent::HTTPD;
   use AnyEvent::Redis;
+  use Scalar::Util qw/weaken/;
   use List::Util qw/first/;
   use List::MoreUtils qw/any/;
 
@@ -59,7 +60,7 @@ package Fuhbot 0.1 {
   sub cleanup {
     my $self = shift;
 
-    say "\ndisconnecting ircs and unregistering plugins...";
+    say "\ndisconnecting ircs...";
     my $cv = AE::cv;
 
     for my $irc (grep {$_->is_connected} $self->ircs) {
@@ -116,7 +117,9 @@ package Fuhbot 0.1 {
       broadcast => $self->{broadcast_cb},
     );
 
-    $plugin->prepare_plugin;
+    weaken (my $weak = $plugin);
+    $weak->prepare_plugin;
+
     push $self->{plugins}, $plugin;
   }
 
@@ -161,7 +164,8 @@ package Fuhbot 0.1 {
     for my $event ($self->events($irc->name, $chan)) {
       my ($plugin, $event, $cb) = @$event;
       if (lc $msg->{command} eq $event) {
-        $cb->($plugin, $irc, $msg);
+        weaken (my $weak = $plugin);
+        $cb->($weak, $irc, $msg);
       }
     }
   }
@@ -172,7 +176,8 @@ package Fuhbot 0.1 {
     for my $route ($self->routes) {
       my ($plugin, $method, $pattern, $cb) = @$route;
       if (lc $req->method eq $method and $url =~ m{^$pattern}) {
-        $cb->($plugin, $req);
+        weaken (my $weak = $plugin);
+        $cb->($weak, $req);
         return;
       }
     }
@@ -187,7 +192,8 @@ package Fuhbot 0.1 {
       if (my @args = $text =~ m{^$pattern}) {
         # ugh, if no captures in regex @args is (1)
         @args = $1 ? @args : ();
-        return $cb->($plugin, $irc, $chan, @args);
+        weaken (my $weak = $plugin);
+        return $cb->($weak, $irc, $chan, @args);
       }
     }
   }
