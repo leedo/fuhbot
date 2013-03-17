@@ -9,7 +9,7 @@ package Fuhbot::Plugin::IsItDown 0.1 {
     my ($self, $irc, $chan, $site) = @_;
     my %headers;
 
-    if (my $map = ($site->config("sites") || {})->{$site}) {
+    if (my $map = ($self->config("sites") || {})->{$site}) {
       $site = $map;
     }
 
