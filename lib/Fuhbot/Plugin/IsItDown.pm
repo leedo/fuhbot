@@ -7,11 +7,19 @@ package Fuhbot::Plugin::IsItDown 0.1 {
 
   command qr{isitdown (.+)} => sub {
     my ($self, $irc, $chan, $site) = @_;
-    my %headers;
+    $self->check_site($irc, $chan, $site);
+  };
 
-    if (my $map = ($self->config("sites") || {})->{$site}) {
-      $site = $map;
+  command qr{is([^\s]+)down} => sub {
+    my ($self, $irc, $chan, $alias) = @_;
+    if (my $site = ($self->config("sites") || {})->{$alias}) {
+      $self->check_site($irc, $chan, $site);
     }
+  };
+
+  sub check_site {
+    my ($self, $irc, $chan, $site) = @_;
+    my %headers;
 
     if ($site =~ s{^https?://([^:]+:[^:]+)@}{}) {
       $headers{Authorization} = "Basic " . MIME::Base64::encode($1);
@@ -24,7 +32,7 @@ package Fuhbot::Plugin::IsItDown 0.1 {
       my $state = $headers->{Status} == 200 ? "up" : "down ($headers->{Reason})";
       $irc->send_srv(PRIVMSG => $chan, "$site is $state");
     };
-  };
+  }
 }
 
 1;

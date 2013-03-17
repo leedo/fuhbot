@@ -2,8 +2,8 @@ use v5.14;
 
 package Fuhbot::Plugin::ChefClient 0.1 {
   use Fuhbot::Plugin;
-  use AnyEvent::Util ();
-  use Fuhbot::Util;
+  use AnyEvent::Util;
+  use Fuhbot::Util qw/gist/;
 
   sub prepare_plugin {
     my $self = shift;
@@ -59,7 +59,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
 
     my $command = $self->config("command") || "chef-client";
 
-    $self->{cv} = AnyEvent::Util::run_cmd $command,
+    $self->{cv} = run_cmd $command,
       '>' => sub {
         my @lines = split "\n", shift;
         $self->broadcast(map {"\x034\02$_"} grep {/ERROR: /} @lines);
@@ -69,7 +69,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{cv}->cb(sub {
       delete $self->{cv};
       $self->broadcast("deploy complete (" . scalar $self->errors . " errors)");
-      Fuhbot::Util::gist "deploy-$self->{time}.txt",
+      gist "deploy-$self->{time}.txt",
         join("\n", @{$self->{lines}}),
         sub { $self->broadcast(shift) };
     });

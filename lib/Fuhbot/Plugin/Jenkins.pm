@@ -2,7 +2,7 @@ use v5.14;
 
 package Fuhbot::Plugin::Jenkins 0.1 {
   use Fuhbot::Plugin;
-  use Fuhbot::Util;
+  use Fuhbot::Util qw/shorten/;
   use JSON::XS;
  
   get "/jenkins" => sub {
@@ -16,7 +16,7 @@ package Fuhbot::Plugin::Jenkins 0.1 {
       my $build = $data->{build};
       my $name = $data->{name};
       my $prefix = $self->config("url");
-      Fuhbot::Util::shorten "$prefix/$build->{url}", sub {
+      shorten "$prefix/$build->{url}", sub {
         my $url = shift;
         $self->broadcast("build #$build->{number} of $name has $build->{phase} $build->{status} - $url");
       };

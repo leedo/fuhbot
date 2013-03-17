@@ -2,7 +2,7 @@ use v5.14;
 
 package Fuhbot::Plugin::Github 0.1 {
   use Fuhbot::Plugin;
-  use Fuhbot::Util;
+  use Fuhbot::Util qw/shorten/;
   use AnyEvent::HTTP;
   use JSON::XS;
 
@@ -55,7 +55,7 @@ package Fuhbot::Plugin::Github 0.1 {
       my $branch = (split "/", $data->{ref})[-1];
 
       for my $commit (reverse @{$data->{commits}}) {
-        Fuhbot::Util::shorten $commit->{url}, sub {
+        shorten $commit->{url}, sub {
           my $url = shift;
           my ($line, @lines) = split "\n", $commit->{message};
           $self->broadcast("[$repo $branch] $line ($commit->{author}{name}) - $url");

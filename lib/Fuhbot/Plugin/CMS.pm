@@ -3,7 +3,7 @@ use v5.14;
 package Fuhbot::Plugin::CMS 0.1 {
   use Fuhbot::Plugin;
   use Fuhbot::Util;
-  use IRC::Formatting::HTML;
+  use IRC::Formatting::HTML qw/html_to_irc/;
   use JSON::XS;
  
   post "/cms" => sub {
@@ -23,7 +23,7 @@ package Fuhbot::Plugin::CMS 0.1 {
             default { 14 }
           }
         };
-        my $message = IRC::Formatting::HTML::html_to_irc($data->{message});
+        my $message = html_to_irc $data->{message};
         $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
       });
     }

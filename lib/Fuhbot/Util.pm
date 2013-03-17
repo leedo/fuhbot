@@ -4,7 +4,9 @@ package Fuhbot::Util 0.1 {
   use AnyEvent::HTTP;
   use URI::Escape;
   use JSON::XS;
+  use Exporter qw/import/;
 
+  our @EXPORT_OK = qw/timeago shorten gist/;
   our $shorten_format = "http://is.gd/api.php?longurl=%s";
 
   sub timeago {
