@@ -20,12 +20,6 @@ package Fuhbot 0.1 {
     my $listen = $config->{listen} || "http://0.0.0.0:9091";
     my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
 
-    my $httpd = AnyEvent::HTTPD->new(
-      ssl  => $proto eq "https",
-      host => $host,
-      port => $port,
-    );
-
     say "listening at $listen";
 
     bless {
@@ -33,7 +27,6 @@ package Fuhbot 0.1 {
       plugins  => [],
       config   => {},
       brain    => $redis,
-      httpd    => $httpd,
       config   => $config,
     }, $class;
   }
@@ -43,16 +36,29 @@ package Fuhbot 0.1 {
     $self->{cv} = AE::cv;
     my $sigs = AE::signal INT => sub { $self->shutdown };
 
-    $self->{httpd}->reg_cb("" => sub { $self->handle_http_req(@_) });
-
     say "loading plugins...";
     $self->load_plugins;
+
+    $self->build_httpd if $self->routes;
 
     say "loading ircs...";
     $self->load_ircs;
 
     $self->{cv}->recv;
     $self->cleanup;
+  }
+
+  sub build_httpd {
+    my $self = shift;
+
+    my $httpd = AnyEvent::HTTPD->new(
+      ssl  => $proto eq "https",
+      host => $host,
+      port => $port,
+    );
+
+    $httpd->reg_cb("" => sub { $self->handle_http_req(@_) });
+    $self->{httpd} = $httpd;
   }
 
   sub shutdown { $_[0]->{cv}->send }
