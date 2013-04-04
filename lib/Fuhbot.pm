@@ -17,11 +17,6 @@ package Fuhbot 0.1 {
     my $config = do $file;
     my $redis = AnyEvent::Redis->new(on_error => sub {warn @_});
 
-    my $listen = $config->{listen} || "http://0.0.0.0:9091";
-    my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
-
-    say "listening at $listen";
-
     bless {
       ircs     => [],
       plugins  => [],
@@ -51,11 +46,16 @@ package Fuhbot 0.1 {
   sub build_httpd {
     my $self = shift;
 
+    my $listen = $self->config('listen') || "http://0.0.0.0:9091";
+    my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
+
     my $httpd = AnyEvent::HTTPD->new(
       ssl  => $proto eq "https",
       host => $host,
       port => $port,
     );
+
+    say "listening at $listen";
 
     $httpd->reg_cb("" => sub { $self->handle_http_req(@_) });
     $self->{httpd} = $httpd;
