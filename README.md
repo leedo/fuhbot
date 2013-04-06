@@ -150,6 +150,8 @@ This plugin implements `quote random` and `quote add` commands.
 use v5.14;
 
 package Fuhbot::Plugin::Quote 0.1 {
+  use Fuhbot::Plugin;
+
   command "quote random" => sub {
     my ($self, $irc, $chan) = @_;
     $self->brain->srandmember("quotes", sub {
