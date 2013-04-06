@@ -5,6 +5,7 @@ requires 'AnyEvent::Redis';
 requires 'Scalar::Util';
 requires 'List::Util';
 requires 'List::MoreUtils';
+requires 'URI';
 requires 'XML::Feed';
 requires 'JSON::XS';
 requires 'IRC::Formatting::HTML';
