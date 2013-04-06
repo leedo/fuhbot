@@ -1,3 +1,5 @@
 config.pl
 fuckbot.sock
+local
 *.swp
+.carton

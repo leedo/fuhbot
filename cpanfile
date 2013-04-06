@@ -11,3 +11,4 @@ requires 'JSON::XS';
 requires 'IRC::Formatting::HTML';
 requires 'HTML::Entities';
 requires 'MIME::Base64';
+requires 'Net::SSLeay';
