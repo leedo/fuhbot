@@ -158,7 +158,7 @@ package Fuhbot::Plugin::Quote 0.1 {
     });
   };
 
-  command "quote add" => sub {
+  command qr{quote add\s+(.+)} => sub {
     my ($self, $irc, $chan, $quote) = @_;
     $self->brain->sadd("quotes", $quote, sub {
       $irc->send_srv(PRIVMSG => $chan, "saved!");
