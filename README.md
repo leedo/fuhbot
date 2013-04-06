@@ -1,6 +1,11 @@
 # fuhbot
 
-<pre>perl -Ilib bin/fuhbot config.pl</pre>
+<pre>
+cp config.example.pl config.pl
+vim config.pl
+carton install
+carton exec -Ilib -- bin/fuhbot config.pl
+</pre>
 
 fuhbot is a simple IRC bot with a administrative console and plugin
 system. Plugins have access to IRC and HTTP events, and can send
