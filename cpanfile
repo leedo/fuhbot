@@ -1,0 +1,12 @@
+requires 'AnyEvent::IRC';
+requires 'AnyEvent::HTTPD';
+requires 'AnyEvent::HTTP';
+requires 'AnyEvent::Redis';
+requires 'Scalar::Util';
+requires 'List::Util';
+requires 'List::MoreUtils';
+requires 'XML::Feed';
+requires 'JSON::XS';
+requires 'IRC::Formatting::HTML';
+requires 'HTML::Entities';
+requires 'MIME::Base64';
