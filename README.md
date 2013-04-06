@@ -3,16 +3,16 @@
 <pre>perl -Ilib bin/fuhbot config.pl</pre>
 
 fuhbot is a simple IRC bot with a administrative console and plugin
-system.  Plugins have access to IRC events and can broadcast messages
-to all channels.
+system. Plugins have access to IRC and HTTP events, and can send
+messages to users or channels.
 
 ## Configuration
 
 The config file is perl. The last statement must return a hash
-reference.  This hash should contain a `plugins` key with a list
+reference. This hash should contain a `plugins` key with a list
 of plugins to load, and an `ircs` key with a list of IRC servers
 to connect to. The `listen` key configures where the HTTPD will
-listen for requests.
+listen for requests. By default it will listen on `0.0.0.0:9091`.
 
 This is a very simple config that loads the `Insult` plugin.
 
