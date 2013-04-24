@@ -16,7 +16,7 @@ package Fuhbot::Plugin::Insult 0.1 {
     });
   };
 
-  command qr{add insult\s+(.+)} sub {
+  command qr{add insult\s+(.+)} => sub {
     my ($self, $irc, $chan, $insult) = @_;
     $self->brain->sadd("insults", $insult, sub {
       $irc->send_srv(PRIVMSG => $chan, "ok!");
