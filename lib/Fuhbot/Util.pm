@@ -59,7 +59,7 @@ package Fuhbot::Util 0.1 {
 
     http_get $url, sub {
       my ($body, $headers) = @_;
-      $headers->{Status} == 200 ? $cb->($body) : $cb->();
+      $headers->{Status} == 200 ? $cb->($body) : $cb->($long);
     }
   }
  
