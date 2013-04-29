@@ -6,7 +6,7 @@ package Fuhbot::Plugin::CMS 0.1 {
   use IRC::Formatting::HTML qw/html_to_irc/;
   use JSON::XS;
  
-  post "/cms" => sub {
+  on post "/cms" => sub {
     my ($self, $req) = @_;
 
     $req->respond({ content => ["text/plain", "o ok"] });

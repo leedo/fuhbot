@@ -9,18 +9,25 @@ package Fuhbot::Plugin 0.1 {
     no warnings 'redefine';
     push @{"$package\::ISA"}, "Fuhbot::Plugin";
 
-    @{"$package\::COMMANDS"} = ();
-    *{"$package\::command"}  = sub { push @{"$package\::COMMANDS"}, [@_] };
-    *{"$package\::commands"} = sub { return @{"$package\::COMMANDS"} };
+    ${"$package\::ON"} = {commands => [], routes => [], events => []};
 
-    @{"$package\::ROUTES"} = ();
-    *{"$package\::get"} = sub { push @{"$package\::ROUTES"}, [get => @_] };
-    *{"$package\::post"} = sub { push @{"$package\::ROUTES"}, [ post => @_] };
-    *{"$package\::routes"} = sub { return @{"$package\::ROUTES"} };
+    *{"$package\::on"} = sub {
+      my ($type, $val) = @_;
+      my $stash = ${"$package\::ON"}->{$type};
+      if (defined $val) {
+        push @$stash, $val;
+      }
+      return @$stash;
+    };
 
-    @{"$package\::EVENTS"} = ();
-    *{"$package\::event"} = sub { push @{"$package\::EVENTS"}, [@_] };
-    *{"$package\::events"} = sub { return @{"$package\::EVENTS"} };
+    *{"$package\::events"} = sub { &{"$package\::on"}("events") };
+    *{"$package\::commands"} = sub { &{"$package\::on"}("commands") };
+    *{"$package\::routes"} = sub { &{"$package\::on"}("routes") };
+
+    *{"$package\::command"}  = sub { "commands", [@_] };
+    *{"$package\::get"} = sub { "routes", [get => @_] };
+    *{"$package\::post"} = sub { "routes", [post => @_] };
+    *{"$package\::event"} = sub { "events", [@_] };
   }
 
   sub new {

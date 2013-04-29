@@ -6,7 +6,7 @@ package Fuhbot::Plugin::Github 0.1 {
   use AnyEvent::HTTP;
   use JSON::XS;
 
-  command "github status" => sub {
+  on command "github status" => sub {
     my ($self, $irc, $chan) = @_;
 
     my %headings = (
@@ -43,7 +43,7 @@ package Fuhbot::Plugin::Github 0.1 {
     };
   };
 
-  post "/github" => sub {
+  on post "/github" => sub {
     my ($self, $req) = @_;
 
     $req->respond({ content => ["text/plain", "o ok"] });

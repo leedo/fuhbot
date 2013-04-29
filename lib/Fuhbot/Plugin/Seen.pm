@@ -6,7 +6,7 @@ package Fuhbot::Plugin::Seen  0.1 {
   use AnyEvent::IRC::Util qw/split_prefix/;
   use JSON::XS;
 
-  event privmsg => sub {
+  on event privmsg => sub {
     my ($self, $irc, $msg) = @_;
     my $chan = $msg->{params}[0];
     my ($nick) = split_prefix $msg->{prefix};
@@ -15,7 +15,7 @@ package Fuhbot::Plugin::Seen  0.1 {
     $self->brain->set(lc $key, encode_json [time, $line], sub {});
   };
 
-  command qr{seen\s+([^\s]+)} => sub{
+  on command qr{seen\s+([^\s]+)} => sub{
     my ($self, $irc, $chan, $nick) = @_;
 
     if (!$nick) {

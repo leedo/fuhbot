@@ -10,7 +10,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{lines}  = [];
   }
 
-  command "deplay cancel" => sub {
+  on command "deplay cancel" => sub {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -22,7 +22,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  command "deploy start" => sub {
+  on command "deploy start" => sub {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
@@ -34,7 +34,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  command "deploy status" => sub {
+  on command "deploy status" => sub {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {

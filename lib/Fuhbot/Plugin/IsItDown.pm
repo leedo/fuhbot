@@ -5,12 +5,12 @@ package Fuhbot::Plugin::IsItDown 0.1 {
   use AnyEvent::HTTP;
   use MIME::Base64 ();
 
-  command qr{isitdown (.+)} => sub {
+  on command qr{isitdown (.+)} => sub {
     my ($self, $irc, $chan, $site) = @_;
     $self->check_site($irc, $chan, $site);
   };
 
-  command qr{is([^\s]+)down} => sub {
+  on command qr{is([^\s]+)down} => sub {
     my ($self, $irc, $chan, $alias) = @_;
     if (my $site = ($self->config("sites") || {})->{$alias}) {
       $self->check_site($irc, $chan, $site);
