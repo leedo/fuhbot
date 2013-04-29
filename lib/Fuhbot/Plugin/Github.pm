@@ -55,12 +55,16 @@ package Fuhbot::Plugin::Github 0.1 {
       my $branch = (split "/", $data->{ref})[-1];
 
       for my $commit (reverse @{$data->{commits}}) {
-        shorten $commit->{url}, sub {
-          my $url = shift;
-          my ($line, @lines) = split "\n", $commit->{message};
-          $self->broadcast("$repo/$branch: $line ($commit->{id} $commit->{author}{name}) - $url");
-          $self->broadcast($_) for @lines;
-        };
+        shorten $commit->{url},
+          method => "POST",
+          format => "http://git.io/create/?url=%s",
+          sub {
+            my $url = "http://git.io/" . shift;
+            my ($line, @lines) = split "\n", $commit->{message};
+            my $id = substr $commit->{id}, 0, 7;
+            $self->broadcast("$repo/$branch: $line ($id $commit->{author}{name}) - $url");
+            $self->broadcast($_) for @lines;
+          };
       }
     }
   };

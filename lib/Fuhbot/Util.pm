@@ -54,10 +54,11 @@ package Fuhbot::Util 0.1 {
   sub shorten {
     my $cb = pop;
     my ($long, %args) = @_;
-    my $format = $args{shorten_format} || $shorten_format;
+    my $format = $args{format} || $shorten_format;
     my $url = sprintf $format, uri_escape($long);
+    my $method = $args{method} ? $args{method} : "GET";
 
-    http_get $url, sub {
+    http_request uc $method, $url, sub {
       my ($body, $headers) = @_;
       $headers->{Status} == 200 ? $cb->($body) : $cb->($long);
     }
