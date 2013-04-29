@@ -56,9 +56,8 @@ package Fuhbot::Util 0.1 {
     my ($long, %args) = @_;
     my $format = $args{format} || $shorten_format;
     my $url = sprintf $format, uri_escape($long);
-    my $method = $args{method} ? $args{method} : "GET";
 
-    http_request uc $method, $url, sub {
+    http_get $url, sub {
       my ($body, $headers) = @_;
       $headers->{Status} == 200 ? $cb->($body) : $cb->($long);
     }
