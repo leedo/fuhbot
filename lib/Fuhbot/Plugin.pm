@@ -3,10 +3,10 @@ use v5.14;
 package Fuhbot::Plugin 0.1 {
   sub import {
     my ($package) = caller;
-    return if $package eq "Fuhbot";
 
     no strict "refs";
     no warnings 'redefine';
+
     push @{"$package\::ISA"}, "Fuhbot::Plugin";
 
     my $stash = {commands => [], routes => [], events => []};
