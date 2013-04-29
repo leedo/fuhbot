@@ -43,7 +43,7 @@ package Fuhbot::Plugin::Github 0.1 {
     };
   };
 
-  get "/github" => sub {
+  post "/github" => sub {
     my ($self, $req) = @_;
 
     $req->respond({ content => ["text/plain", "o ok"] });
