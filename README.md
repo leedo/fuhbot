@@ -88,7 +88,7 @@ This plugin will broadcast a message whenever a topic is changed.
   package Fuhbot::Plugin::Topic 0.1 {
     use Fuhbot::Plugin;
 
-    event topic => sub {
+    on event topic => sub {
       my ($self, $irc, $msg) = @_;
       my ($channel, $topic) = @{$msg->{params}};
       $self->broadcast("$channel has a new topic! $topic");
@@ -112,7 +112,7 @@ The following plugin responds to the line `fuhbot: insult lee`.
   package Fuhbot::Plugin::Insult 0.1 {
     use Fuhbot::Plugin;
     
-    command insult => sub {
+    on command insult => sub {
       my ($self, $irc, $chan, $nick) = @_;
       $irc->send_srv(PRIVMSG => $chan, "fuh $nick");
     }
@@ -134,7 +134,7 @@ requested.
   package Fuhbot::Plugin::Toot 0.1 {
     use Fuhbot::Plugin;
 
-    get "/toot" => sub {
+    on get "/toot" => sub {
       my ($self, $req) = @_;
       $req->respond(["text/plain", "toot!"]);
       $self->broadcast("Someone tooted.");
@@ -157,7 +157,7 @@ use v5.14;
 package Fuhbot::Plugin::Quote 0.1 {
   use Fuhbot::Plugin;
 
-  command "quote random" => sub {
+  on command "quote random" => sub {
     my ($self, $irc, $chan) = @_;
     $self->brain->srandmember("quotes", sub {
       my $quote = shift;
@@ -165,7 +165,7 @@ package Fuhbot::Plugin::Quote 0.1 {
     });
   };
 
-  command qr{quote add\s+(.+)} => sub {
+  on command qr{quote add\s+(.+)} => sub {
     my ($self, $irc, $chan, $quote) = @_;
     $self->brain->sadd("quotes", $quote, sub {
       $irc->send_srv(PRIVMSG => $chan, "saved!");
