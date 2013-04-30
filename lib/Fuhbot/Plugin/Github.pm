@@ -56,9 +56,10 @@ package Fuhbot::Plugin::Github 0.1 {
 
       for my $commit (reverse @{$data->{commits}}) {
         http_post "http://git.io",
-          body => "url=".uri_escape($commit->{url}),
+          "url=$commit->{url}",
           sub {
-            my $url = shift;
+            my ($body, $headers) = @_;
+            my $url = $headers->{location} || $commit->{url};
             my (@lines) = split "\n", $commit->{message};
             my $id = substr $commit->{id}, 0, 7;
             my @files = map {@{$commit->{$_}}} qw/modified removed added/;
@@ -67,7 +68,7 @@ package Fuhbot::Plugin::Github 0.1 {
             my $prefix = "$repo/$branch:";
             $self->broadcast("$prefix " . join " | ", $id, $name, $file);
             $self->broadcast("$prefix $_") for @lines;
-            $self->broadcast("$prefix $url");
+            $self->broadcast("$prefix review: $url");
           };
       }
     }
