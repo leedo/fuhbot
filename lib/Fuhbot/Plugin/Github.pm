@@ -55,14 +55,20 @@ package Fuhbot::Plugin::Github 0.1 {
       my $branch = (split "/", $data->{ref})[-1];
 
       for my $commit (reverse @{$data->{commits}}) {
-        shorten $commit->{url}, sub {
-          my $url = shift;
-          my ($line, @lines) = split "\n", $commit->{message};
-          my $id = substr $commit->{id}, 0, 7;
-          my $name = $commit->{author}{username} || $commit->{author}{name};
-          $self->broadcast("$repo/$branch: $line ($id | $name | $url)");
-          $self->broadcast($_) for @lines;
-        };
+        http_post "http://git.io",
+          body => "url=".uri_escape($commit->{url}),
+          sub {
+            my $url = shift;
+            my (@lines) = split "\n", $commit->{message};
+            my $id = substr $commit->{id}, 0, 7;
+            my @files = map {@{$commit->{$_}}} qw/modified removed added/;
+            my $file = @files > 1 ? "(" . scalar(@files) . " files)" : $files[0];
+            my $name = $commit->{author}{username} || $commit->{author}{name};
+            my $prefix = "$repo/$branch:";
+            $self->broadcast("$prefix " . join " | ", $id, $name, $file);
+            $self->broadcast("$prefix $_") for @lines;
+            $self->broadcast("$prefix $url");
+          };
       }
     }
   };
