@@ -80,7 +80,7 @@ package Fuhbot::Util 0.1 {
   sub longest_common_prefix {
     my $prefix = shift;
     for (@_) {
-      $prefix =~ s/^.// while ! m/^\Q$prefix\E/;
+      $prefix =~ s/.$// while ! m{^\Q$prefix};
       last if $prefix eq "";
     }
     return $prefix;
