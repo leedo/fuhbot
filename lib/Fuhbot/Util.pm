@@ -6,7 +6,7 @@ package Fuhbot::Util 0.1 {
   use JSON::XS;
   use Exporter qw/import/;
 
-  our @EXPORT_OK = qw/timeago shorten gist/;
+  our @EXPORT_OK = qw/timeago shorten gist longest_common_prefix/;
   our $shorten_format = "http://is.gd/api.php?longurl=%s";
 
   sub timeago {
@@ -77,6 +77,14 @@ package Fuhbot::Util 0.1 {
       };
   }
 
+  sub longest_common_prefix {
+    my $prefix = shift;
+    for (@_) {
+      $prefix =~ s/^.// while ! m/^\Q$prefix\E/;
+      last if $prefix eq "";
+    }
+    return $prefix;
+  }
 }
 
 1;

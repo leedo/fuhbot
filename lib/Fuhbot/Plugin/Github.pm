@@ -60,12 +60,17 @@ package Fuhbot::Plugin::Github 0.1 {
           sub {
             my ($body, $headers) = @_;
             my $url = $headers->{location} || $commit->{url};
+
+            my @files = map {@{$commit->{$_}}} qw/modified removed added/;
+            my $file = Fuhbot::Util::longest_common_prefix(@files);
+            $file = "/" unless $file;
+            $file .= " (" . scalar(@files) . " files)" if @files > 1;
+
             my (@lines) = split "\n", $commit->{message};
             my $id = substr $commit->{id}, 0, 7;
-            my @files = map {@{$commit->{$_}}} qw/modified removed added/;
-            my $file = @files > 1 ? "(" . scalar(@files) . " files)" : $files[0];
             my $name = $commit->{author}{username} || $commit->{author}{name};
             my $prefix = "$repo/$branch:";
+
             $self->broadcast("$prefix " . join " | ", $id, $name, $file);
             $self->broadcast("$prefix $_") for @lines;
             $self->broadcast("$prefix review: $url");
