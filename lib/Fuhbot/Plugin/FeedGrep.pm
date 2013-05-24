@@ -36,11 +36,11 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
         } $feed->entries;
 
         for my $entry (@entries) {
-          $self->brain->sismember("feedgrep", $entry->link, sub {
+          $self->brain->sismember("feedgrep-$host", $entry->link, sub {
             my $seen = shift;
             if (!$seen) {
               $self->broadcast(sprintf('"%s" appeared on %s', $entry->title, $host));
-              $self->brain->sadd("feedgrep", $entry->link, sub {});
+              $self->brain->sadd("feedgrep-$host", $entry->link, sub {});
             }
           });
         }
