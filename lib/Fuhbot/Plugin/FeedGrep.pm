@@ -9,7 +9,6 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
   sub prepare_plugin {
     my $self = shift;
     $self->{timer} = AE::timer 0, 60 * 15, sub { $self->check_feeds };
-    $self->{latest} = {};
   }
 
   sub check_feeds {
@@ -26,7 +25,6 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
     my $pattern = qr{$patterns}i;
 
     for my $url (@$feeds) {
-      my $latest = $self->{latest}{$url} || 0;
       my ($host) = $url =~ m{^https?://([^/]+)};
 
       http_get $url, sub {
@@ -34,12 +32,18 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
         my $feed = XML::Feed->parse(\$body);
 
         my @entries = grep {
-          $_->issued->epoch > $latest &&
-          ($_->title =~ $pattern || $_->content =~ $pattern || $_->link =~ $pattern)
+          $_->title =~ $pattern || $_->content =~ $pattern || $_->link =~ $pattern
         } $feed->entries;
 
-        $self->{latest}{$url} = max map { $_->issued->epoch } $feed->entries;
-        $self->broadcast(sprintf('"%s" appeared on %s', $_->title, $host)) for @entries;
+        for my $entry (@entries) {
+          $self->brain->sismember("feedgrep", $entry->link, sub {
+            my $seen = shift;
+            if (!$seen) {
+              $self->broadcast(sprintf('"%s" appeared on %s', $entry->title, $host));
+              $self->brain->sadd("feedgrep", $entry->link, sub {});
+            }
+          });
+        }
       };
     }
   }
