@@ -25,7 +25,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
     my $pattern = qr{$patterns}i;
 
     for my $url (@$feeds) {
-      my ($host) = $url =~ m{^https?://([^/]+)};
+      my ($name) = $url =~ m{^https?://(.+)/};
 
       http_get $url, sub {
         my ($body, $headers) = @_;
@@ -36,11 +36,11 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
         } $feed->entries;
 
         for my $entry (@entries) {
-          $self->brain->sismember("feedgrep-$host", $entry->link, sub {
+          $self->brain->sismember("feedgrep-$name", $entry->link, sub {
             my $seen = shift;
             if (!$seen) {
-              $self->broadcast(sprintf('"%s" appeared on %s', $entry->title, $host));
-              $self->brain->sadd("feedgrep-$host", $entry->link, sub {});
+              $self->broadcast(sprintf('"%s" appeared on %s', $entry->title, $name));
+              $self->brain->sadd("feedgrep-$name", $entry->link, sub {});
             }
           });
         }
