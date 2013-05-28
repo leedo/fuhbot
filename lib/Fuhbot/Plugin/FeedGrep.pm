@@ -3,7 +3,7 @@ use v5.14;
 package Fuhbot::Plugin::FeedGrep 0.1 {
   use Fuhbot::Plugin;
   use AnyEvent::HTTP;
-  use List::Util qw/max/;
+  use List::MoreUtils qw/any/;
   use XML::Feed;
 
   sub prepare_plugin {
@@ -20,27 +20,28 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
           ref $self->config($_) eq "ARRAY";
     }
 
-    my $patterns = join "|", @{$self->config("patterns")};
+    my $patterns = $self->config("patterns");
     my $feeds = $self->config("feeds");
-    my $pattern = qr{$patterns}i;
 
     for my $url (@$feeds) {
-      my ($name) = $url =~ m{^https?://(.+)/};
-
       http_get $url, sub {
         my ($body, $headers) = @_;
         my $feed = XML::Feed->parse(\$body);
 
         my @entries = grep {
-          $_->title =~ $pattern || $_->content =~ $pattern || $_->link =~ $pattern
+          my $e = $_;
+          any {
+            my $t = $e->$_;
+            any { $t =~ /$_/ } @$patterns;
+          } qw{title content link};
         } $feed->entries;
 
         for my $entry (@entries) {
-          $self->brain->sismember("feedgrep-$name", $entry->link, sub {
+          $self->brain->sismember("feedgrep-$url", $entry->link, sub {
             my $seen = shift;
             if (!$seen) {
-              $self->broadcast(sprintf('"%s" appeared on %s', $entry->title, $name));
-              $self->brain->sadd("feedgrep-$name", $entry->link, sub {});
+              $self->broadcast(sprintf('"%s" appeared on %s', $entry->title, $feed->link));
+              $self->brain->sadd("feedgrep-$url", $entry->link, sub {});
             }
           });
         }
