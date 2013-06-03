@@ -4,6 +4,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
   use Fuhbot::Plugin;
   use AnyEvent::HTTP;
   use List::MoreUtils qw/any/;
+  use Encode;
   use XML::Feed;
 
   sub prepare_plugin {
@@ -26,6 +27,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
     for my $url (@$feeds) {
       http_get $url, sub {
         my ($body, $headers) = @_;
+        my $body = decode "utf-8", $body;
         my $feed = XML::Feed->parse(\$body);
 
         my @entries = grep {
