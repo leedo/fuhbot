@@ -5,11 +5,6 @@ package Fuhbot::Plugin::Insult 0.1 {
 
   on command qr{insult\s+([^\s]+)} => sub {
     my ($self, $irc, $chan, $nick) = @_;
-
-    $nick ||= $chan;
-    $nick =~ s/^\s+//;
-    $nick =~ s/\s+$//;
-
     $self->brain->srandmember("insults", sub {
       my $insult = $_[0] || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
