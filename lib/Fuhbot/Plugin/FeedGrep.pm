@@ -30,6 +30,12 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
         my $body = decode "utf-8", $body;
         my $feed = XML::Feed->parse(\$body);
 
+        if (!$feed) {
+          warn "unable to parse feed: $url",
+               XML::Feed->errstr;
+          return;
+        }
+
         my @entries = grep {
           my $e = $_;
           any {
