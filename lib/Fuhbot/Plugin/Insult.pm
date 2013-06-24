@@ -3,7 +3,7 @@ use v5.14;
 package Fuhbot::Plugin::Insult 0.1 {
   use Fuhbot::Plugin;
 
-  on command qr{insult\s+([^\s]+)} => sub {
+  on command qr{insult\s+(.+)} => sub {
     my ($self, $irc, $chan, $nick) = @_;
     $self->brain->srandmember("insults", sub {
       my $insult = $_[0] || "I don't have an insult";
