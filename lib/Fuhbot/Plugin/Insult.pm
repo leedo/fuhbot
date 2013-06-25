@@ -10,6 +10,8 @@ package Fuhbot::Plugin::Insult 0.1 {
       return unless @nicks;
       $nick = @nicks[rand @nicks];
     }
+    $nick =~ s/^\s+//;
+    $nick =~ s/\s+$//;
     $self->brain->srandmember("insults", sub {
       my $insult = $_[0] || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
