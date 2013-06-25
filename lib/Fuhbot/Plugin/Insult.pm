@@ -3,7 +3,7 @@ use v5.14;
 package Fuhbot::Plugin::Insult 0.1 {
   use Fuhbot::Plugin;
 
-  on command qr{insult\s+(.*)} => sub {
+  on command qr{insult\s*(.*)} => sub {
     my ($self, $irc, $chan, $nick) = @_;
     if (!$nick) {
       my @nicks = keys %{$irc->channel_list($chan) || {}};
