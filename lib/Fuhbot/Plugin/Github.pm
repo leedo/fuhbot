@@ -2,8 +2,9 @@ use v5.14;
 
 package Fuhbot::Plugin::Github 0.1 {
   use Fuhbot::Plugin;
-  use Fuhbot::Util qw/shorten/;
+  use Fuhbot::Util qw/timeago/;
   use AnyEvent::HTTP;
+  use Date::Parse;
   use JSON::XS;
 
   on command "github status" => sub {
@@ -11,15 +12,19 @@ package Fuhbot::Plugin::Github 0.1 {
 
     my %colors = (
       'good' => "\x033",
-      'minorproblem' => "\x037",
-      'majorproblem' => "\x034",
+      'minor' => "\x037",
+      'major' => "\x034",
     ); 
 
-    http_get "https://status.github.com/api/last-messages.json" => sub {
+    http_get "https://status.github.com/api/messages.json" => sub {
       my ($body, $headers) = @_;
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
-        $irc->send_srv(PRIVMSG => $chan, $colors{$data->{status}} . $data->{body});
+        for my $event (@$data) {
+          my $time = timeago str2time $event->{created_on};
+          $irc->send_srv(PRIVMSG => $chan, "\002$time");
+          $irc->send_srv(PRIVMSG => $chan, "$colors{$event->{status}}$event->{body}");
+        }
       }
     };
   };
