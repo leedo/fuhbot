@@ -64,7 +64,7 @@ package Fuhbot::IRC 0.1 {
   sub join_channels {
     my $self = shift;
     for my $channel (@{$self->config("channels")}) {
-      $self->send_srv(JOIN => $channel);
+      $self->send_srv(JOIN => split /\s+/, $channel);
     }
   }
 
