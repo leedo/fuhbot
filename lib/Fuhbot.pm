@@ -17,7 +17,7 @@ package Fuhbot 0.1 {
     my $config = do $file;
     my $redis = AnyEvent::Redis->new(
       on_error => sub {
-        warn $_[1] unless $_[1] =~ /^Broken pipe/;
+        warn $_[0] unless $_[0] =~ /^Broken pipe/;
       }
     );
 
