@@ -15,7 +15,11 @@ package Fuhbot 0.1 {
     die "config required" unless $file;
 
     my $config = do $file;
-    my $redis = AnyEvent::Redis->new(on_error => sub {warn @_});
+    my $redis = AnyEvent::Redis->new(
+      on_error => sub {
+        warn $_[1] unless $_[1] =~ /^Broken pipe/;
+      }
+    );
 
     bless {
       ircs     => [],
