@@ -41,7 +41,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
           any {
             my $t = $e->$_;
             any { $t =~ /$_/ } @$patterns;
-          } qw{title description content link};
+          } qw{title summary content link};
         } $feed->entries;
 
         for my $entry (@entries) {
