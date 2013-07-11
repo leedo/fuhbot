@@ -40,7 +40,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
           my $e = $_;
           any {
             my $t = $e->$_;
-            $t = $t->body if $t->can("body");
+            $t = $t->body if ref $t eq "XML::Feed::Content";
             any { $t =~ /$_/ } @$patterns;
           } qw{title summary content link};
         } $feed->entries;
