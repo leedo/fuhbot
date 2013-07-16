@@ -97,17 +97,26 @@ package Fuhbot::Util 0.1 {
         my $p = HTML::Parser->new(
           api_version => 3,
           start_h => [
-            sub { $t = 1 if $_[0] eq "title" },
-            "tag",
+            sub {
+              $t = 1 if $_[1] eq "title";
+              if ($_[1] eq "meta" and $_[2]->{property} eq "og:title") {
+                $t = decode_entities $_[2]->{content};
+                $_[0]->eof;
+              }
+            },
+            "self,tag,attr",
           ],
           text_h  => [
             sub {
               if ($t) {
                 $t = decode_entities $_[1];
-                $_[0]->eof;
               }
             },
             "self,dtext",
+          ],
+          end_h => [
+            sub { $_[0]->eof if $_[1] eq "head" },
+            "self,tag",
           ],
         );
         $p->parse($body);
