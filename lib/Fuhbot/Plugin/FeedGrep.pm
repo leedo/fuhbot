@@ -55,20 +55,22 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
     my $patterns = $self->config("patterns");
     my $feeds = $self->config("feeds");
 
+    my $cv = AE::cv;
+    my @matches;
+
     for my $url (@$feeds) {
+      $cv->begin;
       http_get $url, sub {
         my ($body, $headers) = @_;
         my $body = decode "utf-8", $body;
         my $feed = XML::Feed->parse(\$body);
+        $cv->end;
 
         if (!$feed) {
           warn "unable to parse feed: $url",
                XML::Feed->errstr;
           return;
         }
-
-        my $cv = AE::cv;
-        my @matches;
 
         for my $entry ($feed->entries) {
           if (my $link = $self->grep_entry($entry)) {
@@ -80,21 +82,22 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
             };
           }
         }
-
-        $cv->cb(sub {
-          for my $match (@matches) {
-            my ($title, $entry, $feed) = @$match;
-            $self->brain->sismember("feedgrep-$url", $entry->id, sub {
-              my $seen = shift;
-              if (!$seen) {
-                $self->broadcast(sprintf('"%s" appeared on %s (%s)', $title, map { decode "utf8", $_ } $feed->title, $feed->link));
-                $self->brain->sadd("feedgrep-$url", $entry->id, sub {});
-              }
-            });
-          }
-        });
       };
     }
+
+    $cv->cb(sub {
+      for my $match (@matches) {
+        my ($title, $entry, $feed) = @$match;
+        my $url = $feed->link;
+        $self->brain->sismember("feedgrep-$url", $entry->id, sub {
+          my $seen = shift;
+          if (!$seen) {
+            $self->broadcast(sprintf('"%s" appeared on %s (%s)', $title, map { decode "utf8", $_ } $feed->title, $feed->link));
+            $self->brain->sadd("feedgrep-$url", $entry->id, sub {});
+          }
+        });
+      }
+    });
   }
 }
 
