@@ -5,6 +5,7 @@ package Fuhbot::Util 0.1 {
   use URI::Escape;
   use JSON::XS;
   use Exporter qw/import/;
+  use Encode;
   use HTML::Parser;
   use HTML::Entities;
 
@@ -119,7 +120,7 @@ package Fuhbot::Util 0.1 {
             "self,tag",
           ],
         );
-        $p->parse($body);
+        $p->parse(decode "utf8", $body);
         $p->eof;
       }
       $cb->($t);
