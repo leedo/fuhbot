@@ -111,6 +111,7 @@ package Fuhbot::Util 0.1 {
           ],
         );
         $p->parse($body);
+        $p->eof;
       }
       $cb->($t);
     };
