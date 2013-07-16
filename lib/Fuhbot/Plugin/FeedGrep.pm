@@ -62,6 +62,8 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
       $cv->begin;
       http_get $url, sub {
         my ($body, $headers) = @_;
+        return () unless $headers->{Status} == 200;
+
         my $body = decode "utf-8", $body;
         my $feed = XML::Feed->parse(\$body);
         $cv->end;
