@@ -85,6 +85,34 @@ package Fuhbot::Util 0.1 {
     }
     return $prefix;
   }
+
+  sub resolve_title {
+    my ($url, $cb) = @_;
+    http_get $url, sub {
+      my ($body, $headers) = @_;
+      my $t;
+      if ($headers->{Status} == 200) {
+        my $p = HTML::Parser->new(
+          api_version => 3,
+          start_h => [
+            sub { $t = 1 if $_[0] eq "title" },
+            "tag",
+          ],
+          text_h  => [
+            sub {
+              if ($t) {
+                $t = $_[1];
+                $_[0]->eof;
+              }
+            },
+            "self,dtext",
+          ],
+        );
+        $p->parse($body);
+      }
+      $cb->($t);
+    };
+  }
 }
 
 1;

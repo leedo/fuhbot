@@ -6,10 +6,41 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
   use List::MoreUtils qw/any/;
   use Encode;
   use XML::Feed;
+  use HTML::Parser;
 
   sub prepare_plugin {
     my $self = shift;
     $self->{timer} = AE::timer 0, 60 * 15, sub { $self->check_feeds };
+  }
+
+  sub grep_entry {
+    my ($self, $entry) = @_;
+    my $patterns = $self->config("patterns") || [];
+
+    return () unless @$patterns;
+    return $entry->link if any { $entry->link =~ $_ } @$patterns;
+
+    for my $field (qw{summary content}) {
+      my $url;
+      my $p = HTML::Parser->new(
+        api_version => 3,
+        start_h => [
+          sub {
+            return unless $_[1] eq "a";
+            if (any { $_[2]->{href} =~ $_ } @$patterns) {
+              $url = $_[2]->{href};
+              $_[0]->eof;
+            }
+          },
+          "self,tag,attr"
+        ]
+      );
+      $p->parse($entry->$field->body);
+      $p->eof;
+      return $url if $url;
+    }
+
+    return ();
   }
 
   sub check_feeds {
@@ -36,24 +67,32 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
           return;
         }
 
-        my @entries = grep {
-          my $e = $_;
-          any {
-            my $t = $e->$_;
-            $t = $t->body if ref $t eq "XML::Feed::Content";
-            any { $t =~ /$_/ } @$patterns;
-          } qw{title summary content link};
-        } $feed->entries;
+        my $cv = AE::cv;
+        my @matches;
 
-        for my $entry (@entries) {
-          $self->brain->sismember("feedgrep-$url", $entry->link, sub {
-            my $seen = shift;
-            if (!$seen) {
-              $self->broadcast(sprintf('"%s" appeared on %s (%s)', map { decode "utf8", $_ } $entry->title, $feed->title, $feed->link));
-              $self->brain->sadd("feedgrep-$url", $entry->link, sub {});
-            }
-          });
+        for my $entry ($feed->entries) {
+          if (my $link = $self->grep_entry($entry)) {
+            $cv->begin;
+            Fuhbot::Util::resolve_title $link, sub {
+              my $title = $_[0] || $link;
+              push @matches, [$title, $entry, $feed];
+              $cv->end;
+            };
+          }
         }
+
+        $cv->cb(sub {
+          for my $match (@matches) {
+            my ($title, $entry, $feed) = @$match;
+            $self->brain->sismember("feedgrep-$url", $entry->id, sub {
+              my $seen = shift;
+              if (!$seen) {
+                $self->broadcast(sprintf('"%s" appeared on %s (%s)', map { decode "utf8", $_ } $title, $feed->title, $feed->link));
+                $self->brain->sadd("feedgrep-$url", $entry->id, sub {});
+              }
+            });
+          }
+        });
       };
     }
   }
