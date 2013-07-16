@@ -5,6 +5,8 @@ package Fuhbot::Util 0.1 {
   use URI::Escape;
   use JSON::XS;
   use Exporter qw/import/;
+  use HTML::Parser;
+  use HTML::Entities;
 
   our @EXPORT_OK = qw/timeago shorten gist longest_common_prefix/;
   our $shorten_format = "http://is.gd/api.php?longurl=%s";
@@ -101,7 +103,7 @@ package Fuhbot::Util 0.1 {
           text_h  => [
             sub {
               if ($t) {
-                $t = $_[1];
+                $t = decode_entities $_[1];
                 $_[0]->eof;
               }
             },
