@@ -17,14 +17,10 @@ package Fuhbot::Plugin::URLTitle {
       if ($chan eq $irc->nick) {
         $chan = prefix_nick $msg->{prefix};
       }
-      Fuhbot::Util::http_get $url, sub {
-        my ($body, $headers) = @_;
-        if ($headers->{Status} == 200) {
-          $body = decode utf8 => $body;
-          if (my ($title) = $body =~ m{<title>(.+?)</title>}) {
-            $title = html_to_irc decode_entities $title;
-            $irc->send_srv(PRIVMSG => $chan, $title);
-          }
+      Fuhbot::Util::resolve_title $url, sub {
+        my $title = shift;
+        if ($title) {
+          $irc->send_srv(PRIVMSG => $chan, html_to_irc $title);
         }
       }
     }

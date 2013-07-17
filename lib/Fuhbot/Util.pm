@@ -14,14 +14,16 @@ package Fuhbot::Util 0.1 {
 
   sub http_get {
     my $cb = pop;
-    AnyEvent::HTTP::http_get @_, sub {
+    my ($url, %opts) = @_;
+    AnyEvent::HTTP::http_get $url, %opts, sub {
       my ($body, $headers) = @_;
 
       my $enc = $headers->{"content-encoding"};
       if (defined $enc and $enc eq "gzip") {
-        require "IO::Uncompress::Gunzip";
+        eval { "use IO::Uncompress::Gunzip qw{gunzip};" };
+        die "missing IO::Uncompress::Gunzip" if $@;
         my $unzipped;
-        IO::Uncompress::Gunzip::gunzip \$body, \$unzipped;
+        IO::Uncompress::Gunzip::gunzip(\$body, \$unzipped);
         $body = $unzipped;
       }
 
@@ -85,7 +87,7 @@ package Fuhbot::Util 0.1 {
  
   sub gist {
     my ($name, $content, $cb) = @_;
-    http_post "https://api.github.com/gists",
+    AnyEvent::HTTP::http_post "https://api.github.com/gists",
       encode_json({
         public => JSON::XS::false,
         files => {$name => {content => $content}},
