@@ -2,7 +2,8 @@ use v5.14;
 
 package Fuhbot::Plugin::FeedGrep 0.1 {
   use Fuhbot::Plugin;
-  use AnyEvent::HTTP;
+  use Fuhbot::Util;
+
   use List::MoreUtils qw/any/;
   use Encode;
   use XML::Feed;
@@ -60,7 +61,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
 
     for my $url (@$feeds) {
       $cv->begin;
-      http_get $url, sub {
+      Fuhbot::Util::http_get $url, sub {
         my ($body, $headers) = @_;
         return () unless $headers->{Status} == 200;
 

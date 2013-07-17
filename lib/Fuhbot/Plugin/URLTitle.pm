@@ -2,9 +2,9 @@ use v5.14;
 
 package Fuhbot::Plugin::URLTitle {
   use Fuhbot::Plugin;
+  use Fuhbot::Util;
 
   use AnyEvent::IRC::Util qw/prefix_nick/;
-  use AnyEvent::HTTP;
   use HTML::Entities;
   use IRC::Formatting::HTML qw/html_to_irc/;
   use Encode;
@@ -17,7 +17,7 @@ package Fuhbot::Plugin::URLTitle {
       if ($chan eq $irc->nick) {
         $chan = prefix_nick $msg->{prefix};
       }
-      http_get $url, sub {
+      Fuhbot::Util::http_get $url, sub {
         my ($body, $headers) = @_;
         if ($headers->{Status} == 200) {
           $body = decode utf8 => $body;

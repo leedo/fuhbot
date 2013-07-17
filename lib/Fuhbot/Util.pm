@@ -1,7 +1,7 @@
 use v5.14;
 
 package Fuhbot::Util 0.1 {
-  use AnyEvent::HTTP;
+  use AnyEvent::HTTP ();
   use URI::Escape;
   use JSON::XS;
   use Exporter qw/import/;
@@ -11,6 +11,23 @@ package Fuhbot::Util 0.1 {
 
   our @EXPORT_OK = qw/timeago shorten gist longest_common_prefix/;
   our $shorten_format = "http://is.gd/api.php?longurl=%s";
+
+  sub http_get {
+    my $cb = pop;
+    AnyEvent::HTTP::http_get @_, sub {
+      my ($body, $headers) = @_;
+
+      my $enc = $headers->{"content-encoding"};
+      if (defined $enc and $enc eq "gzip") {
+        require "IO::Uncompress::Gunzip";
+        my $unzipped;
+        IO::Uncompress::Gunzip::gunzip \$body, \$unzipped;
+        $body = $unzipped;
+      }
+
+      $cb->($body, $headers);
+    };
+  }
 
   sub timeago {
     my $time = shift;
@@ -60,7 +77,7 @@ package Fuhbot::Util 0.1 {
     my $format = $args{format} || $shorten_format;
     my $url = sprintf $format, uri_escape($long);
 
-    http_get $url, sub {
+    AnyEvent::HTTP::http_get $url, sub {
       my ($body, $headers) = @_;
       $headers->{Status} == 200 ? $cb->($body) : $cb->($long);
     }
@@ -91,7 +108,7 @@ package Fuhbot::Util 0.1 {
 
   sub resolve_title {
     my ($url, $cb) = @_;
-    http_get $url, sub {
+    Fuhbot::Util::http_get $url, sub {
       my ($body, $headers) = @_;
       my $t;
       if ($headers->{Status} == 200) {
