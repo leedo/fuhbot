@@ -112,15 +112,15 @@ package Fuhbot::Util 0.1 {
     my ($url, $cb) = @_;
     Fuhbot::Util::http_get $url, sub {
       my ($body, $headers) = @_;
-      my $t;
+      my ($in_title, $title);
       if ($headers->{Status} == 200) {
         my $p = HTML::Parser->new(
           api_version => 3,
           start_h => [
             sub {
-              $t = 1 if $_[1] eq "title";
+              $in_title = 1 if $_[1] eq "title";
               if ($_[1] eq "meta" and $_[2]->{property} eq "og:title") {
-                $t = decode_entities $_[2]->{content};
+                $title = decode_entities $_[2]->{content};
                 $_[0]->eof;
               }
             },
@@ -128,21 +128,25 @@ package Fuhbot::Util 0.1 {
           ],
           text_h  => [
             sub {
-              if ($t) {
-                $t = decode_entities $_[1];
+              if ($in_title) {
+                $title = decode_entities $_[1];
               }
             },
             "self,dtext",
           ],
           end_h => [
-            sub { $_[0]->eof if $_[1] eq "head" },
+            sub {
+              $_[0]->eof if $_[1] eq "/head";
+              $in_title = 0 if $_[1] eq "/title";
+            },
             "self,tag",
           ],
         );
         $p->parse(decode "utf8", $body);
         $p->eof;
       }
-      $cb->($t);
+      $title =~ s/\n//g if $title;
+      $cb->($title);
     };
   }
 }
