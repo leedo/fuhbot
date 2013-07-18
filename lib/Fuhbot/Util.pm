@@ -145,7 +145,12 @@ package Fuhbot::Util 0.1 {
         $p->parse(decode "utf8", $body);
         $p->eof;
       }
-      $title =~ s/\n//g if $title;
+      # cleanup
+      if ($title) {
+        $title =~ s/[\n\t]//g;
+        $title =~ s/^\s+//g;
+        $title =~ s/\s+$//g;
+      }
       $cb->($title);
     };
   }
