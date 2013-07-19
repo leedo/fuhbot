@@ -12,11 +12,9 @@ package Fuhbot::Util 0.1 {
   our @EXPORT_OK = qw/timeago shorten gist longest_common_prefix/;
   our $shorten_format = "http://is.gd/api.php?longurl=%s";
 
-  my $cookie_jar = {};
   my %defaults = (
-    cookie_jar => $cookie_jar,
     headers => {
-      "Referrer"   => "http://www.google.com/",
+      "Referer"   => "http://www.google.com/",
       "User-Agent" => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1500.71 Safari/537.36",
     }
   );
@@ -28,6 +26,8 @@ package Fuhbot::Util 0.1 {
     for (%defaults) {
       $opts{$_} = $defaults{$_} unless defined $opts{$_};
     }
+
+    $opts{cookie_jar} = {} unless defined $opts{cookie_jar};
 
     AnyEvent::HTTP::http_get $url, %opts, sub {
       my ($body, $headers) = @_;
