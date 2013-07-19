@@ -23,7 +23,7 @@ package Fuhbot::Util 0.1 {
     my $cb = pop;
     my ($url, %opts) = @_;
 
-    for (%defaults) {
+    for (keys %defaults) {
       $opts{$_} = $defaults{$_} unless defined $opts{$_};
     }
 
