@@ -16,11 +16,6 @@ class Fuhbot::Plugin::Seen extends Fuhbot::Plugin {
   }
 
   method seen ($irc, $chan, $nick) is command(qr{seen\s+([^\s]+)}) {
-    if (!$nick) {
-      $irc->send_srv(PRIVMSG => $chan, "gimme a nick");
-      return;
-    }
-
     my $key = join "-", $nick, $chan, $irc->name;
     $self->brain->get(lc $key, sub {
       my ($data) = @_;
