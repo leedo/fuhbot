@@ -18,11 +18,6 @@ package Fuhbot::Plugin::Seen  0.1 {
   on command qr{seen\s+([^\s]+)} => sub{
     my ($self, $irc, $chan, $nick) = @_;
 
-    if (!$nick) {
-      $irc->send_srv(PRIVMSG => $chan, "gimme a nick");
-      return;
-    }
-
     my $key = join "-", $nick, $chan, $irc->name;
     $self->brain->get(lc $key, sub {
       my ($data) = @_;
