@@ -1,77 +1,74 @@
-use v5.14;
+use v5.16;
+use warnings;
+use mop;
 
-package Fuhbot 0.1 {
-  use AnyEvent;
-  use AnyEvent::IRC::Util;
-  use Fuhbot::IRC;
-  use AnyEvent::HTTPD;
-  use AnyEvent::Redis;
-  use Scalar::Util qw/weaken/;
-  use List::Util qw/first/;
-  use List::MoreUtils qw/any/;
+use AnyEvent;
+use AnyEvent::IRC::Util;
+use AnyEvent::HTTPD;
+use AnyEvent::Redis;
+use Scalar::Util qw/weaken/;
+use List::Util qw/first/;
+use List::MoreUtils qw/any/;
 
-  sub new {
-    my ($class, $file) = @_;
-    die "config required" unless $file;
+use Fuhbot::IRC;
+use Fuhbot::Plugin;
 
-    my $config = do $file;
-    my $redis = AnyEvent::Redis->new(
+class Fuhbot {
+  has $ircs    = [];
+  has $plugins = [];
+  has $config  = {};
+  has $cv      = do { AE::cv };
+
+  has $brain;
+  has $httpd;
+
+  method brain {
+    $brain //= AnyEvent::Redis->new(
       on_error => sub {
         warn $_[0] unless $_[0] =~ /^Broken pipe/;
       }
     );
-
-    bless {
-      ircs     => [],
-      plugins  => [],
-      config   => {},
-      brain    => $redis,
-      config   => $config,
-    }, $class;
   }
 
-  sub run {
-    my $self = shift;
-    $self->{cv} = AE::cv;
+  method httpd {
+    $httpd //= do {
+      my $listen = $self->config('listen') || "http://0.0.0.0:9091";
+      my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
+
+      my $httpd = AnyEvent::HTTPD->new(
+        ssl  => $proto eq "https",
+        host => $host,
+        port => $port,
+      );
+
+      say "listening at $listen";
+
+      $httpd;
+    };
+  }
+
+  method run {
     my $sigs = AE::signal INT => sub { $self->shutdown };
 
     say "loading plugins...";
     $self->load_plugins;
 
-    $self->build_httpd if $self->routes;
+    if ($self->routes) {
+      $self->httpd->reg_cb("" => sub { $self->handle_http_req($_[1]) });
+    }
 
     say "loading ircs...";
     $self->load_ircs;
 
-    $self->{cv}->recv;
+    $cv->recv;
     $self->cleanup;
   }
 
-  sub build_httpd {
-    my $self = shift;
+  method shutdown { $cv->send }
 
-    my $listen = $self->config('listen') || "http://0.0.0.0:9091";
-    my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
-
-    my $httpd = AnyEvent::HTTPD->new(
-      ssl  => $proto eq "https",
-      host => $host,
-      port => $port,
-    );
-
-    say "listening at $listen";
-
-    $httpd->reg_cb("" => sub { $self->handle_http_req(@_) });
-    $self->{httpd} = $httpd;
-  }
-
-  sub shutdown { $_[0]->{cv}->send }
-
-  sub cleanup {
-    my $self = shift;
-
+  method cleanup {
     say "\ndisconnecting ircs...";
-    my $cv = AE::cv;
+    $cv = AE::cv;
 
     for my $irc (grep {$_->is_connected} $self->ircs) {
       $cv->begin;
@@ -85,72 +82,61 @@ package Fuhbot 0.1 {
     $cv->recv;
   }
 
-  sub broadcast {
-    my ($self, $msg, $networks) = @_;
+  method broadcast ($msg, $networks) {
     my %map = map {my ($n, @c) = split "@"; lc $n, @c ? \@c : undef} @{$networks || []};
     for my $irc ($self->ircs(keys %map)) {
       $irc->broadcast($msg, $map{lc $irc->name});
     }
   }
 
-  sub load_ircs {
-    my $self = shift;
+  method load_ircs {
     for my $config (@{$self->config("ircs")}) {
       my $irc = Fuhbot::IRC->new($config);
       $irc->reg_cb("irc_*" => sub { $self->handle_irc_line(@_) });
       $irc->reg_cb("publicmsg" => sub { $self->channel_msg(@_) });
       $irc->reg_cb("privatemsg" => sub { $self->private_msg(@_) });
       $irc->connect;
-      push $self->{ircs}, $irc;
+      push @$ircs, $irc;
     }
   }
 
-  sub load_plugins {
-    my $self = shift;
-    for my $config (@{$self->config("plugins")}) {
-      $self->load_plugin($config);
-    }
+  method load_plugins {
+    $self->load_plugin($_) for @{$self->config("plugins")};
   }
 
-  sub load_plugin {
-    my ($self, $config) = @_;
-
-    my $class = "Fuhbot::Plugin::$config->{name}";
-    eval "use $class";
+  method load_plugin ($plugin_config) {
+    my $plugin_class = "Fuhbot::Plugin::$plugin_config->{name}";
+    eval "use $plugin_class";
     die $@ if $@;
     
-    $self->{broadcast_cb} ||= sub {$self->broadcast(@_)};
-
-    my $plugin = $class->new(
-      config    => $config,
-      brain     => $self->{brain},
-      broadcast => $self->{broadcast_cb},
+    my $plugin = $plugin_class->new(
+      config    => $plugin_config,
+      brain     => $self->brain,
+      broadcast => sub { $self->broadcast(@_) },
     );
 
     weaken (my $weak = $plugin);
     $weak->prepare_plugin;
 
-    push $self->{plugins}, $plugin;
+    push @$plugins, $plugin;
   }
 
-  sub reload_plugin {
-    my ($self, $name) = @_;
+  method reload_plugin ($name) {
     delete $INC{"Fuhbot/Plugin/$name.pm"};
 
-    my $orig = [ $self->plugins ];
-    $self->{plugins} = [grep {$_->name ne $name} $self->plugins];
+    my $orig = [ @$plugins ];
+    $plugins = [ grep {$_->name ne $name} @$plugins ];
 
-    my @configs = grep {$_->{name} eq $name} @{$self->config("plugins")};
-    eval { $self->load_plugin($_) for @configs };
+    my @reload = grep {$_->{name} eq $name} @{$self->config("plugins")};
+    eval { $self->load_plugin($_) for @reload };
 
     if ($@) {
-      $self->{plugins} = $orig;
+      $plugins = $orig;
       die "error reloading $name plugin: $@";
     }
   }
 
-  sub channel_msg {
-    my ($self, $irc, $chan, $msg) = @_;
+  method channel_msg ($irc, $chan, $msg) {
     my $text = $msg->{params}[-1];
     my $nick = $irc->nick;
 
@@ -159,100 +145,85 @@ package Fuhbot 0.1 {
     }
   }
 
-  sub private_msg {
-    my ($self, $irc, $nick, $msg) = @_;
+  method private_msg ($irc, $nick, $msg) {
     my $text = $msg->{params}[-1];
     my $sender = AnyEvent::IRC::Util::prefix_nick $msg->{prefix};
     $self->handle_command($irc, $sender, $text);
   }
 
-  sub handle_irc_line {
-    my ($self, $irc, $msg) = @_;
+  method handle_irc_line ($irc, $msg) {
     # XXX awful method of finding channel name... better?
     my $chan = first {$irc->is_channel_name($_)} @{$msg->{params}};
 
     for my $event ($self->events($irc->name, $chan)) {
-      my ($plugin, $event, $cb) = @$event;
+      my ($plugin, $method, $event) = @$event;
       if (lc $msg->{command} eq $event) {
-        weaken (my $weak = $plugin);
-        $cb->($weak, $irc, $msg);
+        $plugin->$method($irc, $msg);
       }
     }
   }
 
-  sub handle_http_req {
-    my ($self, $httpd, $req) = @_;
+  method handle_http_req ($req) {
     my $url = $req->url->path_query;
     for my $route ($self->routes) {
-      my ($plugin, $method, $pattern, $cb) = @$route;
+      my ($plugin, $method, $pattern) = @$route;
       if (lc $req->method eq $method and $url =~ m{^$pattern}) {
-        weaken (my $weak = $plugin);
-        $cb->($weak, $req);
-        return;
+        return $plugin->method($req);
       }
     }
     $req->respond([404, "not found", {"Content-Type" => "text/plain"}, 'not found']);
   }
 
-  sub handle_command {
-    my ($self, $irc, $chan, $text) = @_;
-
+  method handle_command ($irc, $chan, $text) {
     for my $command ($self->commands($irc->name, $chan)) {
-      my ($plugin, $pattern, $cb) = @{$command};
+      my ($plugin, $method, $pattern) = @{$command};
       if (my @args = $text =~ m{^$pattern}) {
         # ugh, if no captures in regex @args is (1)
         @args = $1 ? @args : ();
-        weaken (my $weak = $plugin);
-        return $cb->($weak, $irc, $chan, @args);
+        $plugin->$method($irc, $chan, @args);
       }
     }
   }
 
-  sub events {
-    my $self = shift;
+  method events {
     my $p;
-    return map {$p = $_; map {[$p, @$_]} $p->events} $self->plugins(@_);
+    return map {$p = $_; map {[$p, @$_]} mop::get_meta($p)->events} $self->plugins(@_);
   }
 
-  sub routes {
-    my $self = shift;
+  method routes {
     my $p;
-    return map {$p = $_; map {[$p, @$_]} $p->routes} $self->plugins;
+    return map {$p = $_; map {[$p, @$_]} mop::get_meta($p)->routes} $self->plugins;
   }
 
-  sub commands {
-    my $self = shift;
+  method commands {
     my $p;
-    return map {$p = $_; map {[$p, @$_]} $p->commands} $self->plugins(@_);
+    return map {$p = $_; map {[$p, @$_]} mop::get_meta($p)->commands} $self->plugins(@_);
   }
 
-  sub ircs {
-    my ($self, @networks) = @_;
-    return @{$self->{ircs}} unless @networks;
+  method ircs (@networks) {
+    return @$ircs unless @networks;
     grep {
       my $n = $_->name;
       any {lc $_ eq lc $n} @networks
-    } @{$self->{ircs}}
+    } @$ircs
   }
 
-  sub plugins {
-    my ($self, $network, $chan) = @_;
-    return @{$self->{plugins}} unless $network;
+  method plugins ($network, $chan) {
+    return @$plugins unless $network;
     grep {
       my $i = $_->config("ircs");
       !$i || any {
         lc $_->[0] eq lc $network
           && (!$chan || (!$_->[1] || lc $_->[1] eq lc $chan))
       } map {[split "@"]} @$i;
-    } @{$self->{plugins}};
+    } @$plugins;
   }
 
-  sub config {
-    my ($self, $key) = @_;
+  method config ($key) {
     if ($key) {
-      return $self->{config}{$key};
+      return $config->{$key};
     }
-    return $self->{config};
+    return $config;
   }
 }
 

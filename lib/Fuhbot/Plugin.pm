@@ -1,69 +1,38 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin 0.1 {
-  sub import {
-    my ($package) = caller;
-    return if $package eq "Fuhbot";
+class Fuhbot::PluginClass extends mop::class {
+  has $commands = [];
+  has $routes   = [];
+  has $events   = [];
 
-    no strict "refs";
-    no warnings 'redefine';
+  method commands { @$commands }
+  method routes   { @$routes }
+  method events   { @$events }
 
-    push @{"$package\::ISA"}, "Fuhbot::Plugin";
+  method add_command { push @$commands, [@_] }
+  method add_route   { push @$routes, [@_] }
+  method add_event   { push @$events, [@_] }
+}
 
-    my $stash = {commands => [], routes => [], events => []};
-    my $on = sub {
-      my ($type, $val) = @_;
-      my $handlers = $stash->{$type};
-      if (defined $val) {
-        push @$handlers, $val;
-      }
-      return @$handlers;
-    };
+class Fuhbot::Plugin metaclass Fuhbot::PluginClass {
+  has $broadcast is ro;
+  has $brain     is ro;
+  has $config;
 
-    *{"$package\::on"}       = $on;
-    *{"$package\::events"}   = sub { $on->("events") };
-    *{"$package\::commands"} = sub { $on->("commands") };
-    *{"$package\::routes"}   = sub { $on->("routes") };
-    *{"$package\::command"}  = sub { "commands", [@_] };
-    *{"$package\::get"}      = sub { "routes", [get => @_] };
-    *{"$package\::post"}     = sub { "routes", [post => @_] };
-    *{"$package\::event"}    = sub { "events", [@_] };
-  }
+  method prepare_plugin { }
+  method config ($key) { $config->{$key} }
 
-  sub new {
-    my $class = shift;
-    bless {@_}, $class;
-  }
-
-  sub prepare_plugin {}
-
-  sub name {
-    my $self = shift;
-    return $self->config("name");
-  }
-
-  sub brain {
-    return $_[0]->{brain};
-  }
-
-  sub config {
-    my ($self, $key) = @_;
-    if ($key) {
-      return $self->{config}{$key};
-    }
-    return $self->{config};
-  }
-
-  sub broadcast {
-    my ($self, @msgs) = @_;
+  method broadcast (@msgs) {
     if (@msgs) {
-      $self->{broadcast}->($_, $self->config("ircs")) for @msgs;
+      $broadcast->($_, $config->{ircs}) for @msgs;
     }
   }
 
-  sub shorten {
+  method shorten ($url) {
     my $cb = pop;
-    my ($self, $url, %args) = @_;
+    my %args = @_;
     if (my $fmt = $self->config("shorten_format")) {
       $args{format} = $fmt;
     }

@@ -1,13 +1,14 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin::Seen  0.1 {
-  use Fuhbot::Plugin;
-  use Fuhbot::Util qw/timeago/;
-  use AnyEvent::IRC::Util qw/split_prefix/;
-  use JSON::XS;
+use Fuhbot::Util qw/timeago command event/;
+use AnyEvent::IRC::Util qw/split_prefix/;
+use JSON::XS;
 
-  on event privmsg => sub {
-    my ($self, $irc, $msg) = @_;
+class Fuhbot::Plugin::Seen extends Fuhbot::Plugin {
+
+  method privmsg ($irc, $msg) is event {
     my $chan = $msg->{params}[0];
     my ($nick) = split_prefix $msg->{prefix};
     my $key = join "-", $nick, $chan, $irc->name;
@@ -15,9 +16,7 @@ package Fuhbot::Plugin::Seen  0.1 {
     $self->brain->set(lc $key, encode_json [time, $line], sub {});
   };
 
-  on command qr{seen\s+([^\s]+)} => sub{
-    my ($self, $irc, $chan, $nick) = @_;
-
+  method seen ($irc, $chan, $nick) is command(qr{seen\s+([^\s]+)}) {
     if (!$nick) {
       $irc->send_srv(PRIVMSG => $chan, "gimme a nick");
       return;

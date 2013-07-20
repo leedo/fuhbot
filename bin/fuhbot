@@ -3,4 +3,4 @@
 use Fuhbot;
 use Fuhbot::Console;
 
-(our $fuhbot = Fuhbot->new(@ARGV))->run;
+(our $fuhbot = Fuhbot->new(config => do shift))->run;

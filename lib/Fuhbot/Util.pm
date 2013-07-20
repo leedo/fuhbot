@@ -9,8 +9,31 @@ package Fuhbot::Util 0.1 {
   use HTML::Parser;
   use HTML::Entities;
 
-  our @EXPORT_OK = qw/timeago shorten gist longest_common_prefix/;
+  our @EXPORT_OK = qw/timeago shorten gist longest_common_prefix command event route/;
   our $shorten_format = "http://is.gd/api.php?longurl=%s";
+
+  # traits to be used by plugin methods
+  sub command {
+    if ($_[0]->isa('mop::method')) {
+      my $method = shift;
+      $method->associated_meta->add_command($method->name, @_);
+    }
+  }
+
+  sub route {
+    if ($_[0]->isa('mop::method')) {
+      my $method = shift;
+      $method->associated_meta->add_route($method->name, @_);
+    }
+  }
+
+  sub event {
+    if ($_[0]->isa('mop::method')) {
+      my $method = shift;
+      my $event = $_[0] || $method->name;
+      $method->associated_meta->add_event($method->name, $event);
+    }
+  }
 
   my %defaults = (
     headers => {
