@@ -1,14 +1,13 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin::CMS 0.1 {
-  use Fuhbot::Plugin;
-  use Fuhbot::Util;
-  use IRC::Formatting::HTML qw/html_to_irc/;
-  use JSON::XS;
- 
-  on post "/cms" => sub {
-    my ($self, $req) = @_;
+use Fuhbot::Util;
+use IRC::Formatting::HTML qw/html_to_irc/;
+use JSON::XS;
 
+class Fuhbot::Plugin::CMS extends Fuhbot::Plugin {
+  method cms ($req) is route(post => "/cms") {
     $req->respond({ content => ["text/plain", "o ok"] });
     my $payload = $req->parm("payload");
 
@@ -27,7 +26,7 @@ package Fuhbot::Plugin::CMS 0.1 {
         $self->broadcast("\x03$color\x02CMS $data->{type}:\x02\x03 $message - $url");
       });
     }
-  };
+  }
 }
 
 1;

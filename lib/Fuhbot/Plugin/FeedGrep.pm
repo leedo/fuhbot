@@ -1,21 +1,21 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin::FeedGrep 0.1 {
-  use Fuhbot::Plugin;
-  use Fuhbot::Util;
+use Fuhbot::Util;
+use List::MoreUtils qw/any/;
+use Encode;
+use XML::Feed;
+use HTML::Parser;
 
-  use List::MoreUtils qw/any/;
-  use Encode;
-  use XML::Feed;
-  use HTML::Parser;
+class Fuhbot::Plugin::FeedGrep extends Fuhbot::Plugin {
+  has $timer;
 
-  sub prepare_plugin {
-    my $self = shift;
-    $self->{timer} = AE::timer 0, 60 * 15, sub { $self->check_feeds };
+  method prepare_plugin {
+    $timer = AE::timer 0, 60 * 15, sub { $self->check_feeds };
   }
 
-  sub grep_entry {
-    my ($self, $entry) = @_;
+  method grep_entry ($entry) {
     my $patterns = $self->config("patterns") || [];
 
     return () unless @$patterns;
@@ -27,7 +27,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
         api_version => 3,
         start_h => [
           sub {
-            return unless $_[1] eq "a";
+            return unless $_[1] eq "a" and defined $_[2]->{href};
             if (any { $_[2]->{href} =~ $_ } @$patterns) {
               $url = $_[2]->{href};
               $_[0]->eof;
@@ -36,7 +36,8 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
           "self,tag,attr"
         ]
       );
-      $p->parse($entry->$field->body);
+      
+        $p->parse($entry->$field->body || "");
       $p->eof;
       return $url if $url;
     }
@@ -44,9 +45,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
     return ();
   }
 
-  sub check_feeds {
-    my $self = shift;
-
+  method check_feeds {
     for (qw/patterns feeds/) {
       die "no $_ defined"
         unless defined $self->config($_) and
@@ -65,7 +64,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
         my ($body, $headers) = @_;
         return () unless $headers->{Status} == 200;
 
-        my $body = decode "utf-8", $body;
+        $body = decode "utf-8", $body;
         my $feed = XML::Feed->parse(\$body);
         $cv->end;
 

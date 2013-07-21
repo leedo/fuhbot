@@ -1,24 +1,22 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin::IsItDown 0.1 {
-  use Fuhbot::Plugin;
-  use AnyEvent::HTTP;
-  use MIME::Base64 ();
+use AnyEvent::HTTP;
+use MIME::Base64 ();
 
-  on command qr{isitdown (.+)} => sub {
-    my ($self, $irc, $chan, $site) = @_;
+class Fuhbot::Plugin::IsItDown extends Fuhbot::Plugin {
+  method isitdown ($irc, $chan, $site) is command(qr{isitdown (.+)}) {
     $self->check_site($irc, $chan, $site);
-  };
+  }
 
-  on command qr{is([^\s]+)down} => sub {
-    my ($self, $irc, $chan, $alias) = @_;
+  method isdown ($irc, $chan, $alias) is command(qr{is([^\s]+)down}) {
     if (my $site = ($self->config("sites") || {})->{$alias}) {
       $self->check_site($irc, $chan, $site);
     }
-  };
+  }
 
-  sub check_site {
-    my ($self, $irc, $chan, $site) = @_;
+  method check_site ($irc, $chan, $site) {
     my %headers;
 
     if ($site =~ s{^https?://([^:]+:[^:]+)@}{}) {

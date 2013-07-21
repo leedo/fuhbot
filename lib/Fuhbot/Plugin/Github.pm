@@ -1,15 +1,14 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin::Github 0.1 {
-  use Fuhbot::Plugin;
-  use Fuhbot::Util qw/timeago/;
-  use AnyEvent::HTTP;
-  use Date::Parse;
-  use JSON::XS;
+use Fuhbot::Util qw/timeago route command/;
+use AnyEvent::HTTP;
+use Date::Parse;
+use JSON::XS;
 
-  on command "github status" => sub {
-    my ($self, $irc, $chan) = @_;
-
+class Fuhbot::Plugin::Github extends Fuhbot::Plugin {
+  method status ($irc, $chan) is command("github status") {
     my %colors = (
       'good' => "\x033",
       'minor' => "\x037",
@@ -27,11 +26,9 @@ package Fuhbot::Plugin::Github 0.1 {
         }
       }
     };
-  };
+  }
 
-  on post "/github" => sub {
-    my ($self, $req) = @_;
-
+  method github ($req) is route(post => "/github") {
     $req->respond({ content => ["text/plain", "o ok"] });
     my $payload = $req->parm("payload");
 
@@ -63,7 +60,7 @@ package Fuhbot::Plugin::Github 0.1 {
           };
       }
     }
-  };
+  }
 }
 
 1;

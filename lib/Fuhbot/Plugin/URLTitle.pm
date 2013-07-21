@@ -1,16 +1,15 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin::URLTitle {
-  use Fuhbot::Plugin;
-  use Fuhbot::Util;
+use Fuhbot::Util;
+use AnyEvent::IRC::Util qw/prefix_nick/;
+use HTML::Entities;
+use IRC::Formatting::HTML qw/html_to_irc/;
+use Encode;
 
-  use AnyEvent::IRC::Util qw/prefix_nick/;
-  use HTML::Entities;
-  use IRC::Formatting::HTML qw/html_to_irc/;
-  use Encode;
-
-  on event privmsg => sub {
-    my ($self, $irc, $msg) = @_;
+class Fuhbot::Plugin::URLTitle extends Fuhbot::Plugin {
+  method privmsg ($irc, $msg) is event {
     my ($chan, $text) = @{$msg->{params}};
     if ($text =~ m{(https?://[^\s]+)}) {
       my $url = $1;
@@ -24,7 +23,7 @@ package Fuhbot::Plugin::URLTitle {
         }
       }
     }
-  };
+  }
 }
 
 1;

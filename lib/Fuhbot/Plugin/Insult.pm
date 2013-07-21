@@ -1,10 +1,9 @@
 use v5.14;
+use warnings;
+use mop;
 
-package Fuhbot::Plugin::Insult 0.1 {
-  use Fuhbot::Plugin;
-
-  on command qr{insult\s*(.*)} => sub {
-    my ($self, $irc, $chan, $nick) = @_;
+class Fuhbot::Plugin::Insult extends Fuhbot::Plugin {
+  method insult ($irc, $chan, $nick) is command(qr{insult\s*(.*)}) {
     if (!$nick) {
       my @nicks = keys %{$irc->channel_list($chan) || {}};
       return unless @nicks;
@@ -16,14 +15,13 @@ package Fuhbot::Plugin::Insult 0.1 {
       my $insult = $_[0] || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
     });
-  };
+  }
 
-  on command qr{add insult\s+(.+)} => sub {
-    my ($self, $irc, $chan, $insult) = @_;
+  method add ($irc, $chan, $insult) is command(qr{add insult\s+(.+)}) {
     $self->brain->sadd("insults", $insult, sub {
       $irc->send_srv(PRIVMSG => $chan, "ok!");
     });
-  };
+  }
 }
 
 1;
