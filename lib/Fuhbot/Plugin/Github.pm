@@ -20,10 +20,14 @@ package Fuhbot::Plugin::Github 0.1 {
       my ($body, $headers) = @_;
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
+        my $now = time;
+        my $day = 60 * 60 * 24;
         for my $event (@$data) {
-          my $time = timeago str2time $event->{created_on};
-          $irc->send_srv(PRIVMSG => $chan, "\002$time");
-          $irc->send_srv(PRIVMSG => $chan, "$colors{$event->{status}}$event->{body}");
+          my $time = str2time $event->{created_on};
+          if ($now - $time < $day) {
+            $irc->send_srv(PRIVMSG => $chan, "\002" . timeago $time);
+            $irc->send_srv(PRIVMSG => $chan, "$colors{$event->{status}}$event->{body}");
+          }
         }
       }
     };
