@@ -14,7 +14,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
 
     $self->{top_author} = "";
 
-    my $interval = $self->config("interval") || 60 * 5;
+    my $interval = $self->config("interval") || 60 * 60;
     $self->{timer} = AE::timer $interval, $interval, sub {
       $self->check_parsely;
     };
@@ -32,7 +32,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
 
   sub check_parsely {
     my $self = shift;
-    my $url = $self->api_url("realtime/authors", time => "24h");
+    my $url = $self->api_url("realtime/authors", time => "1h");
 
     http_get $url, sub {
       my ($body, $headers) = @_;
