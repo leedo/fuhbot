@@ -10,7 +10,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{lines}  = [];
   }
 
-  on command "deplay cancel" => sub {
+  on command "deploy cancel" => sub {
     my ($self, $irc, $chan) = @_;
 
     if ($self->{cv}) {
