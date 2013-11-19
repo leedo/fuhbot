@@ -6,8 +6,8 @@ package Fuhbot::Plugin::Blobkins 0.1 {
 
   on command "brodkin" => sub { 
     my ($self, $irc, $chan) = @_;
-    my $first = rands(qw{G J}) . vowels() . rands(qw{n rb});
-    my $last = "B" . rands(qw{l r k}) . vowels() . rands(qw{k bk}) . "ins";
+    my $first = rands(qw{G J}) . vowels(3) . rands(qw{n rb});
+    my $last = "B" . rands(qw{l r k}) . vowels(4) . rands(qw{k bk}) . vowels(1) . "ns";
     $irc->send_srv(PRIVMSG => $chan, "$first $last");
   };
 
@@ -20,8 +20,9 @@ package Fuhbot::Plugin::Blobkins 0.1 {
   }
 
   sub vowels {
+    my $limit = shift;
     my @vowels = qw{a e i o u};
-    join "", map {maybe_umlat(rands(@vowels))} 0..rand(4);
+    join "", map {maybe_umlat(rands(@vowels))} 0..int(rand($limit));
   }
 }
 
