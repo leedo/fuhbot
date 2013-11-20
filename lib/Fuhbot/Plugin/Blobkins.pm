@@ -2,7 +2,6 @@ use v5.14;
 
 package Fuhbot::Plugin::Blobkins 0.1 {
   use Fuhbot::Plugin;
-  use Encode;
 
   on command "brodkin" => sub { 
     my ($self, $irc, $chan) = @_;
@@ -21,7 +20,7 @@ package Fuhbot::Plugin::Blobkins 0.1 {
 
   sub vowels {
     my $limit = shift;
-    my @vowels = qw{a e i o u};
+    my @vowels = (qw{a e i o u}, "\x{00F8}");
     join "", map {maybe_umlat(rands(@vowels))} 0..int(rand($limit));
   }
 }
