@@ -14,14 +14,14 @@ package Fuhbot::Plugin::Blobkins 0.1 {
     @_[int(rand(@_))];
   }
 
-  sub maybe_umlat {
+  sub maybe_umlaut {
     rand > 0.05 ? $_[0] : "$_[0]\x{034F}\x{0308}";
   }
 
   sub vowels {
     my $limit = shift;
     my @vowels = (qw{a e i o u}, "\x{00F8}");
-    join "", map {maybe_umlat(rands(@vowels))} 0..int(rand($limit));
+    join "", map {maybe_umlaut(rands(@vowels))} 0..int(rand($limit));
   }
 }
 
