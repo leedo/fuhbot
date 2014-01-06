@@ -21,16 +21,25 @@ package Fuhbot::Plugin::Github 0.1 {
       my ($body, $headers) = @_;
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
-        my $now = time;
-        my $day = 60 * 60 * 24;
+        my $cv = AE::cv;
 
-        my @events = map {$_->{time} = str2time $_->{created_on}} @$data;
-        my @recent = (grep { $now - $_->{time} < $day } @events) || ($events[0]);
-
-        for my $event (@recent) {
-          $irc->send_srv(PRIVMSG => $chan, "\002" . timeago $event->{time});
-          $irc->send_srv(PRIVMSG => $chan, "$colors{$event->{status}}$event->{body}");
+        if (@$data) {
+          $cv->send(@$data);
         }
+        else {
+          http_get "https://status.github.com/api/last-message.json" => sub {
+            $cv->send(decode_json $_[0]);
+          };
+        }
+
+        $cv->cb(sub {
+          my @events = $_[0]->recv;
+          for my $event (@events) {
+            my $time = str2time $event->{created_on};
+            $irc->send_srv(PRIVMSG => $chan, "\002" . timeago $time);
+            $irc->send_srv(PRIVMSG => $chan, "$colors{$event->{status}}$event->{body}");
+          }
+        });
       }
     };
   };
