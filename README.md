@@ -69,7 +69,7 @@ The following configuration will only use the `Insult` plugin in
 </pre>
 
 
-## Limiting plugins to specific hosts
+### Limiting plugins to specific hosts
 
 Some plugins listen for HTTP requests from external services. The
 Github plugin does this, for example. It is best to limit these
