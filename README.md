@@ -69,6 +69,40 @@ The following configuration will only use the `Insult` plugin in
 </pre>
 
 
+## Limiting plugins to specific hosts
+
+Some plugins listen for HTTP requests from external services. The
+Github plugin does this, for example. It is best to limit these
+requests to the hosts you know should be making them. You can do
+this by adding an `allow\_hosts` key to the plugin's config.
+
+<pre>
+{
+  plugins => [
+    { name => "Github",
+      allow_hosts => [
+        "192.30.252.0/22",
+        "204.232.175.64/27",
+      ],
+    },
+  ],
+  ircs => [ ... ],
+}
+</pre>
+
+If you are running the bot behind an HTTP proxy (e.g. Apache with
+ProxyPass), the above won't work because all requests will appear
+to be coming from `127.0.0.1`. To fix this, add the `reverse\_http\_proxy`
+key to your config. It will rewrite the remote host to the
+`X-Forwarded-For` header for any requests coming from this address.
+
+<pre>
+{
+  plugins => [ ... ],
+  ircs => [ ... ],
+  reverse\_http\_proxy => "127.0.0.1",
+}
+</pre>
 
 ## Writing plugins
 
