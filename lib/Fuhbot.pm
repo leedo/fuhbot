@@ -52,6 +52,7 @@ package Fuhbot 0.1 {
 
     my $listen = $self->config('listen') || "http://0.0.0.0:9091";
     my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
+    my $reverse = $self->config("reverse_http_proxy");
 
     my $httpd = AnyEvent::HTTPD->new(
       ssl  => $proto eq "https",
@@ -61,7 +62,12 @@ package Fuhbot 0.1 {
 
     say "listening at $listen";
 
-    $httpd->reg_cb("" => sub { $self->handle_http_req(@_) });
+    $httpd->reg_cb("" => sub {
+      if (defined $_[1]->headers->{"X-Forwarded-For"} and $_[1]->client_host eq $reverse) {
+        ($_[1]->{host},) = $_[1]->headers->{"X-Forwarded-For"} =~ /([^,\s]+)/;
+      }
+      $self->handle_http_req(@_)
+    });
     $self->{httpd} = $httpd;
   }
 
