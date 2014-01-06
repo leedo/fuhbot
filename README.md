@@ -74,7 +74,7 @@ The following configuration will only use the `Insult` plugin in
 Some plugins listen for HTTP requests from external services. The
 Github plugin does this, for example. It is best to limit these
 requests to the hosts you know should be making them. You can do
-this by adding an `allow\_hosts` key to the plugin's config.
+this by adding an `allow_hosts` key to the plugin's config.
 
 <pre>
 {
@@ -92,7 +92,7 @@ this by adding an `allow\_hosts` key to the plugin's config.
 
 If you are running the bot behind an HTTP proxy (e.g. Apache with
 ProxyPass), the above won't work because all requests will appear
-to be coming from `127.0.0.1`. To fix this, add the `reverse\_http\_proxy`
+to be coming from `127.0.0.1`. To fix this, add the `reverse_http_proxy`
 key to your config. It will rewrite the remote host to the
 `X-Forwarded-For` header for any requests coming from this address.
 
