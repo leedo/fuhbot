@@ -4,6 +4,7 @@ package Fuhbot::Plugin::Github 0.1 {
   use Fuhbot::Plugin;
   use Fuhbot::Util qw/timeago/;
   use AnyEvent::HTTP;
+  use Net::CIDR::Lite;
   use Date::Parse;
   use JSON::XS;
 
@@ -22,19 +23,29 @@ package Fuhbot::Plugin::Github 0.1 {
         my $data = decode_json $body;
         my $now = time;
         my $day = 60 * 60 * 24;
-        for my $event (@$data) {
-          my $time = str2time $event->{created_on};
-          if ($now - $time < $day) {
-            $irc->send_srv(PRIVMSG => $chan, "\002" . timeago $time);
-            $irc->send_srv(PRIVMSG => $chan, "$colors{$event->{status}}$event->{body}");
-          }
+
+        my @events = map {$_->{time} = str2time $_->{created_on}} @$data;
+        my @recent = (grep { $now - $_->{time} < $day } @events) || ($events[0]);
+
+        for my $event (@recent) {
+          $irc->send_srv(PRIVMSG => $chan, "\002" . timeago $event->{time});
+          $irc->send_srv(PRIVMSG => $chan, "$colors{$event->{status}}$event->{body}");
         }
       }
     };
   };
 
+  my $cidr = Net::CIDR::Lite->new(
+    "192.30.252.0/22",
+    "204.232.175.64/27",
+  );
+
   on post "/github" => sub {
     my ($self, $req) = @_;
+
+    unless ($cidr->find($req->client_host)) {
+      return $req->respond(403, 'forbidden', {}, 'forbidden');
+    }
 
     $req->respond({ content => ["text/plain", "o ok"] });
     my $payload = $req->parm("payload");
