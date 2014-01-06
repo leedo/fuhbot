@@ -2,6 +2,10 @@
   plugins => [
     {
       name => "Github",
+      allow_hosts => [
+        "192.30.252.0/22",
+        "204.232.175.64/27",
+      ],
     },
     {
       name => "Jenkins",

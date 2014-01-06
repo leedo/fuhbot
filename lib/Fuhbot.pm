@@ -6,6 +6,7 @@ package Fuhbot 0.1 {
   use Fuhbot::IRC;
   use AnyEvent::HTTPD;
   use AnyEvent::Redis;
+  use Net::CIDR::Lite;
   use Scalar::Util qw/weaken/;
   use List::Util qw/first/;
   use List::MoreUtils qw/any/;
@@ -191,6 +192,14 @@ package Fuhbot 0.1 {
     my $url = $req->url->path_query;
     for my $route ($self->routes) {
       my ($plugin, $method, $pattern, $cb) = @$route;
+
+      if (my $allowed = $plugin->config("allow_hosts")) {
+        my $cidr = Net::CIDR::Lite->new(@$allowed);
+        unless ($cidr->find($req->client_host)) {
+          return $req->respond([403, 'forbidden', {}, 'forbidden']);
+        }
+      }
+
       if (lc $req->method eq $method and $url =~ m{^$pattern}) {
         weaken (my $weak = $plugin);
         $cb->($weak, $req);
