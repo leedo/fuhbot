@@ -63,8 +63,8 @@ package Fuhbot 0.1 {
     say "listening at $listen";
 
     $httpd->reg_cb("" => sub {
-      if (defined $_[1]->headers->{"X-Forwarded-For"} and $_[1]->client_host eq $reverse) {
-        ($_[1]->{host},) = $_[1]->headers->{"X-Forwarded-For"} =~ /([^,\s]+)/;
+      if (defined $_[1]->headers->{"x-forwarded-for"} and $_[1]->client_host eq $reverse) {
+        ($_[1]->{host},) = $_[1]->headers->{"x-forwarded-for"} =~ /([^,\s]+)/;
       }
       $self->handle_http_req(@_)
     });
