@@ -100,7 +100,7 @@ key to your config. It will rewrite the remote host to the
 {
   plugins => [ ... ],
   ircs => [ ... ],
-  reverse\_http\_proxy => "127.0.0.1",
+  reverse_http_proxy => "127.0.0.1",
 }
 </pre>
 
