@@ -193,14 +193,14 @@ package Fuhbot 0.1 {
     for my $route ($self->routes) {
       my ($plugin, $method, $pattern, $cb) = @$route;
 
-      if (my $allowed = $plugin->config("allow_hosts")) {
-        my $cidr = Net::CIDR::Lite->new(@$allowed);
-        unless ($cidr->find($req->client_host)) {
-          return $req->respond([403, 'forbidden', {}, 'forbidden']);
-        }
-      }
-
       if (lc $req->method eq $method and $url =~ m{^$pattern}) {
+        if (my $allowed = $plugin->config("allow_hosts")) {
+          my $cidr = Net::CIDR::Lite->new(@$allowed);
+          unless ($cidr->find($req->client_host)) {
+            return $req->respond([403, 'forbidden', {}, 'forbidden']);
+          }
+        }
+
         weaken (my $weak = $plugin);
         $cb->($weak, $req);
         return;
