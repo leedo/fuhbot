@@ -1,5 +1,25 @@
 use v5.14;
 
+{
+  use AnyEvent::IRC::Connection;
+  use AnyEvent::IRC::Util qw/parse_irc_msg/;
+  use Encode;
+  no warnings;
+
+  # YUCK!!!
+  *AnyEvent::IRC::Connection::_feed_irc_data = sub {
+    my ($self, $line) = @_;
+    my $m = parse_irc_msg (decode ("utf8", $line));
+    $self->event (read => $m);
+    $self->event ('irc_*' => $m);
+    $self->event ('irc_' . (lc $m->{command}), $m);
+  };
+
+  my $mk_msg = sub {encode "utf8", AnyEvent::IRC::Util::mk_msg(@_)};
+  *AnyEvent::IRC::Connection::mk_msg = $mk_msg;
+  *AnyEvent::IRC::Client::mk_msg = $mk_msg;
+}
+
 package Fuhbot::IRC 0.1 {
   use parent 'AnyEvent::IRC::Client';
   use Encode;
@@ -74,11 +94,6 @@ package Fuhbot::IRC 0.1 {
     for my $channel (@$channels) {
       $self->send_srv(PRIVMSG => $channel, $msg);
     }
-  }
-
-  sub send_srv {
-    my $self = shift;
-    $self->SUPER::send_srv(map {encode utf8 => $_} @_);
   }
 }
 
