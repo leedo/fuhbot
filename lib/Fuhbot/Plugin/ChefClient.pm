@@ -58,7 +58,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
   sub job {
     my ($self, $target) = @_;
     if (defined $self->{jobs}{$target}) {
-      return $self->{jobs};
+      return $self->{jobs}{$target};
     }
   }
 
