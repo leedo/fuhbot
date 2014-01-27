@@ -57,7 +57,7 @@ package Fuhbot::Plugin 0.1 {
   sub announce {
     my ($self, $destination, @msgs) = @_;
     if (@msgs) {
-      $self->{broadcast}->($_, $destination) for @msgs;
+      $self->{broadcast}->($_, [$destination]) for @msgs;
     }
   }
 
