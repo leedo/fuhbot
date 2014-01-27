@@ -7,72 +7,110 @@ package Fuhbot::Plugin::ChefClient 0.1 {
 
   sub prepare_plugin {
     my $self = shift;
-    $self->{lines}  = [];
+    $self->{jobs} = {};
   }
 
-  on command "deploy cancel" => sub {
-    my ($self, $irc, $chan) = @_;
+  on command qr{deploy cancel (\S+)} => sub {
+    my ($self, $irc, $chan, $target) = @_;
 
-    if ($self->{cv}) {
-      delete $self->{cv};
-      $self->broadcast("deploy canceled");
+    if ($self->job($target)) {
+      delete $self->{jobs}{$target};
+      $self->broadcast("$target: deploy canceled");
     }
     else {
-      $irc->send_srv(PRIVMSG => $chan, "no deploy in progress");
+      $irc->send_srv(PRIVMSG => $chan, "no $target deploy in progress");
     }
   };
 
-  on command "deploy start" => sub {
-    my ($self, $irc, $chan) = @_;
+  on command qr{deploy start (\S+)} => sub {
+    my ($self, $irc, $chan, $target) = @_;
 
-    if ($self->{cv}) {
-      $irc->send_srv(PRIVMSG => $chan, "deploy already in progress");
+    if ($self->job($target)) {
+      $irc->send_srv(PRIVMSG => $chan, "$target deploy already in progress");
     }
     else {
-      $self->broadcast("starting deploy");
-      $self->spawn;
+      $self->spawn($target);
     }
   };
 
-  on command "deploy status" => sub {
-    my ($self, $irc, $chan) = @_;
+  on command qr{deploy status (\S+)} => sub {
+    my ($self, $irc, $chan, $target) = @_;
 
-    if ($self->{cv}) {
-      $irc->send_srv(PRIVMSG => $chan, "deploying (" . scalar $self->errors . " errors)");
-      $irc->send_srv($_) for @{$self->{lines}}[-5 .. -1];
+    if (my $job = $self->job($target)) {
+      $irc->send_srv(PRIVMSG => $chan, "$target: deploy in progress");
+      $irc->send_srv(PRIVMSG => $chan, $_) for map {"$target: $_"} @{$job->{lines}}[-5 .. -1];
     }
     else {
-      $irc->send_srv(PRIVMSG => $chan, "idle");
+      $irc->send_srv(PRIVMSG => $chan, "$target: no deploy in progress");
     }
   };
 
-  sub errors {
-    my $self = shift;
-    grep {/ERROR: /} @{$self->{lines}};
+  sub command {
+    my ($self, $target) = @_;
+    my $targets = $self->config("targets");
+    if (defined $targets and defined $targets->{$target}) {
+      return $targets->{$target};
+    }
+  }
+
+  sub job {
+    my ($self, $target) = @_;
+    if (defined $self->{jobs}{$target}) {
+      return $self->{jobs};
+    }
+  }
+
+  sub on_read {
+    my ($self, $target) = @_;
+
+    return sub {
+      my $line = shift;
+      my $job = $self->job($target);
+      my @lines = split "\n", shift;
+      my @errors = map {"$target: \x034\02$_"} grep {/(ERROR|BUG): /} @lines;
+      $self->broadcast(@errors);
+      push @{$job->{lines}}, @lines;
+      push @{$job->{errors}}, @errors;
+    };
+  }
+
+  sub on_complete {
+    my ($self, $target) = @_;
+
+    return sub {
+      my $job = $self->job($target);
+      my $lines = $job->{lines};
+
+      $self->broadcast("$target: deploy complete (" . scalar @{$job->{errors}} . " errors)");
+      delete $self->{jobs}{$target};
+
+      gist "deploy-$job->{time}.txt",
+        join("\n", @$lines),
+        sub { $self->broadcast(shift) };
+    };
   }
 
   sub spawn {
-    my $self = shift;
+    my ($self, $target) = @_;
+    my $command = $self->command($target);
 
-    $self->{lines} = [];
-    $self->{time} = time;
+    if (!$command) {
+      return $self->broadcast("no valid deploy target named $target");
+    }
 
-    my $command = $self->config("command") || "chef-client";
+    $self->broadcast("$target: starting deploy");
 
-    $self->{cv} = run_cmd $command,
-      '>' => sub {
-        my @lines = split "\n", shift;
-        $self->broadcast(map {"\x034\02$_"} grep {/(ERROR|BUG): /} @lines);
-        push @{$self->{lines}}, @lines;
-      };
+    $self->{jobs}{$target} = {
+      lines => [],
+      errors => [],
+      time  => time,
+    };
 
-    $self->{cv}->cb(sub {
-      delete $self->{cv};
-      $self->broadcast("deploy complete (" . scalar $self->errors . " errors)");
-      gist "deploy-$self->{time}.txt",
-        join("\n", @{$self->{lines}}),
-        sub { $self->broadcast(shift) };
-    });
+    $self->{jobs}{$target}{cv} = run_cmd $command,
+      '>' => $self->on_read($target);
+
+    $self->{jobs}{$target}{cv}->cb(
+      $self->on_complete($target));
   }
 }
 
