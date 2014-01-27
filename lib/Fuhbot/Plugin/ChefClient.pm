@@ -45,7 +45,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  sub command {
+  sub job_command {
     my ($self, $target) = @_;
     my $targets = $self->config("targets");
     if (defined $targets and defined $targets->{$target}) {
@@ -66,8 +66,8 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     return sub {
       my $line = shift;
       my $job = $self->job($target);
-      my @lines = split "\n", shift;
-      my @errors = map {"$target: \x034\02$_"} grep {/(ERROR|BUG): /} @lines;
+      my @lines = split qr{\015?\012}, $line;
+      my @errors = map {"$target: \x034\02$_"} grep {/(ERROR|BUG)/} @lines;
       $self->broadcast(@errors);
       push @{$job->{lines}}, @lines;
       push @{$job->{errors}}, @errors;
@@ -79,6 +79,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
 
     return sub {
       my $job = $self->job($target);
+
       my $lines = $job->{lines};
 
       $self->broadcast("$target: deploy complete (" . scalar @{$job->{errors}} . " errors)");
@@ -92,7 +93,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
 
   sub spawn {
     my ($self, $target) = @_;
-    my $command = $self->command($target);
+    my $command = $self->job_command($target);
 
     if (!$command) {
       return $self->broadcast("no valid deploy target named $target");
