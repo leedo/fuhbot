@@ -68,7 +68,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     return sub {
       my $line = shift;
       my $job = $self->job($target);
-      my @lines = split qr{\015?\012}, $line;
+      my @lines = grep {$_} split qr{\015?\012}, $line;
       my @errors = map {"$target: \x034\02$_"} grep {/(ERROR|BUG)/} @lines;
 
       $self->broadcast(@errors);
