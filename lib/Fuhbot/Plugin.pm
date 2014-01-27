@@ -54,6 +54,13 @@ package Fuhbot::Plugin 0.1 {
     return $self->{config};
   }
 
+  sub announce {
+    my ($self, $destination, @msgs) = @_;
+    if (@msgs) {
+      $self->{broadcast}->($_, $destination) for @msgs;
+    }
+  }
+
   sub broadcast {
     my ($self, @msgs) = @_;
     if (@msgs) {

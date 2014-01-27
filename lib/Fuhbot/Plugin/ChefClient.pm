@@ -38,7 +38,9 @@ package Fuhbot::Plugin::ChefClient 0.1 {
 
     if (my $job = $self->job($target)) {
       $irc->send_srv(PRIVMSG => $chan, "$target: deploy in progress");
-      $irc->send_srv(PRIVMSG => $chan, $_) for map {"$target: $_"} @{$job->{lines}}[-5 .. -1];
+      if (scalar @{$job->{errors}}) {
+        $irc->send_srv(PRIVMSG => $chan, $_) for map {"$target: $_"} @{$job->{errors}};
+      }
     }
     else {
       $irc->send_srv(PRIVMSG => $chan, "$target: no deploy in progress");
@@ -68,9 +70,11 @@ package Fuhbot::Plugin::ChefClient 0.1 {
       my $job = $self->job($target);
       my @lines = split qr{\015?\012}, $line;
       my @errors = map {"$target: \x034\02$_"} grep {/(ERROR|BUG)/} @lines;
+
       $self->broadcast(@errors);
-      push @{$job->{lines}}, @lines;
       push @{$job->{errors}}, @errors;
+
+      $self->announce($self->config("output"), $_) for @lines;
     };
   }
 
@@ -80,14 +84,8 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     return sub {
       my $job = $self->job($target);
 
-      my $lines = $job->{lines};
-
       $self->broadcast("$target: deploy complete (" . scalar @{$job->{errors}} . " errors)");
       delete $self->{jobs}{$target};
-
-      gist "deploy-$job->{time}.txt",
-        join("\n", @$lines),
-        sub { $self->broadcast(shift) };
     };
   }
 
