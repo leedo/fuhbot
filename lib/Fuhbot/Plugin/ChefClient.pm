@@ -66,15 +66,16 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     my ($self, $target) = @_;
 
     return sub {
-      my $line = shift;
       my $job = $self->job($target);
-      my @lines = grep {$_} split qr{\015?\012}, $line;
+      my @lines = grep {$_} split qr{\015?\012}, $_[0];
       my @errors = map {"$target: \x034\02$_"} grep {/(ERROR|BUG)/} @lines;
 
       $self->broadcast(@errors);
       push @{$job->{errors}}, @errors;
 
-      $self->announce($self->config("output"), $_) for @lines;
+      if (my $channel = $self->config("output")) {
+        $self->announce($channel, $_) for @lines;
+      }
     };
   }
 
@@ -100,7 +101,6 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->broadcast("$target: starting deploy");
 
     $self->{jobs}{$target} = {
-      lines => [],
       errors => [],
       time  => time,
     };
