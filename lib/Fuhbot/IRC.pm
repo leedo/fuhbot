@@ -35,6 +35,7 @@ package Fuhbot::IRC 0.1 {
 
   sub setup_events {
     my $self = shift;
+    $self->ctcp_auto_reply ('VERSION', ['VERSION', 'irssi v0.8.15']);
     $self->{reconnect_cb} = sub {$self->reconnect};
     $self->reg_cb(registered => sub { $self->join_channels });
     $self->reg_cb(registered => sub { delete $self->{reconnect_timer} });
