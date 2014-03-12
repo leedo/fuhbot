@@ -14,12 +14,9 @@ package Fuhbot::Plugin::RunCmd 0.1 {
         on command $pattern => sub {
           my ($self, $irc, $chan, @args) = @_;
           if ($self->{jobs}{$name}) {
-            return $self->broadcast("$name is already running");
+            return $irc->send_srv(PRIVMSG => $chan, "$name is already running");
           }
 
-          $self->{jobs}{$name};
-
-          $self->broadcast("starting $name");
           $self->{jobs}{$name} = run_cmd sprintf($line, @args),
             '>' => sub {
               my @lines = grep {$_} split qr{\015?\012}, $_[0];
@@ -27,7 +24,6 @@ package Fuhbot::Plugin::RunCmd 0.1 {
             };
 
           $self->{jobs}{$name}->cb(sub {
-            $self->broadcast("$name completed");
             delete $self->{jobs}{$name};
           });
         };
