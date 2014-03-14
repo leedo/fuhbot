@@ -14,7 +14,7 @@ package Fuhbot::Plugin::Insult 0.1 {
     $nick =~ s/^\s+//;
     $nick =~ s/\s+$//;
     $self->brain->srandmember("insults", sub {
-      my $insult = $_[0] || "I don't have an insult";
+      my $insult = defined $_[0] ? decode("utf8", $_[0]) : "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
     });
   };
