@@ -2,6 +2,7 @@ use v5.14;
 
 package Fuhbot::Plugin::Insult 0.1 {
   use Fuhbot::Plugin;
+  use Encode;
 
   on command qr{insult\s*(.*)} => sub {
     my ($self, $irc, $chan, $nick) = @_;
@@ -20,7 +21,7 @@ package Fuhbot::Plugin::Insult 0.1 {
 
   on command qr{add insult\s+(.+)} => sub {
     my ($self, $irc, $chan, $insult) = @_;
-    $self->brain->sadd("insults", $insult, sub {
+    $self->brain->sadd("insults", encode("utf8", $insult), sub {
       $irc->send_srv(PRIVMSG => $chan, "ok!");
     });
   };
