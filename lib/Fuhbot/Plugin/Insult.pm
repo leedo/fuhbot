@@ -14,14 +14,14 @@ package Fuhbot::Plugin::Insult 0.1 {
     $nick =~ s/^\s+//;
     $nick =~ s/\s+$//;
     $self->brain->srandmember("insults", sub {
-      my $insult = defined $_[0] ? decode("utf8", $_[0]) : "I don't have an insult";
+      my $insult = $_[0] || "I don't have an insult";
       $irc->send_srv(PRIVMSG => $chan, "hey $nick, $insult");
     });
   };
 
   on command qr{add insult\s+(.+)} => sub {
     my ($self, $irc, $chan, $insult) = @_;
-    $self->brain->sadd("insults", encode("utf8", $insult), sub {
+    $self->brain->sadd("insults", $insult, sub {
       $irc->send_srv(PRIVMSG => $chan, "ok!");
     });
   };
