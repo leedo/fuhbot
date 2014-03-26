@@ -17,6 +17,10 @@ package Fuhbot::Plugin::RunCmd 0.1 {
             return $irc->send_srv(PRIVMSG => $chan, "$name is already running");
           }
 
+          if (ref $line and ref $line eq "CODE") {
+            return $irc->send_srv(PRIVMSG => $chan, $line->(@args));
+          }
+
           $self->{jobs}{$name} = run_cmd sprintf($line, @args),
             '>' => sub {
               my @lines = grep {$_} split qr{\015?\012}, $_[0];
