@@ -53,14 +53,13 @@ package Fuhbot::Plugin::Github 0.1 {
       my $data = decode_json $payload;
       my $repo = $data->{repository}{name};
       my $branch = (split "/", $data->{ref})[-1];
-      my $prefix = $branch eq "master" ? $repo : "$repo/$branch";
       my @commits = reverse @{$data->{commits}};
 
       if (@commits && my ($source) = $commits[0]{message} =~ m{^merge branch '([^']+)'}i) {
         my $name = $commits[0]{author}{username} || $commits[0]{author}{name};
         $self->broadcast(
-          "Heuristic branch merge: $name merged " .
-          scalar(@commits) . " commits to $prefix from $source"
+          "Heuristic branch merge on $repo: $name merged " .
+          scalar(@commits) . " commits to $branch from $source"
         );
         return;
       }
@@ -80,6 +79,7 @@ package Fuhbot::Plugin::Github 0.1 {
             my (@lines) = split "\n", $commit->{message};
             my $id = substr $commit->{id}, 0, 7;
             my $name = $commit->{author}{username} || $commit->{author}{name};
+            my $prefix = $branch eq "master" ? $repo : "$repo/$branch";
 
             $self->broadcast("$prefix: " . join " | ", $id, $name, $file);
             $self->broadcast("$prefix: $_") for @lines;
