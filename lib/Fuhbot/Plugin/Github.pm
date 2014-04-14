@@ -56,11 +56,11 @@ package Fuhbot::Plugin::Github 0.1 {
       my $prefix = $branch eq "master" ? $repo : "$repo/$branch";
       my @commits = reverse @{$data->{commits}};
 
-      if (@commits && $commits[0]{message} =~ m{^merge branch '([^']+)' into (.+)}i) {
+      if (@commits && my ($source) = $commits[0]{message} =~ m{^merge branch '([^']+)'}i) {
         my $name = $commits[0]{author}{username} || $commits[0]{author}{name};
         $self->broadcast(
-          "Heuristic branch merge: pushed " .
-          scalar(@commits) . " commits to $prefix by $name"
+          "Heuristic branch merge: $name merged " .
+          scalar(@commits) . " commits to $prefix from $source"
         );
         return;
       }
