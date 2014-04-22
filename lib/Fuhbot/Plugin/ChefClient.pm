@@ -10,7 +10,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{jobs} = {};
   }
 
-  on command qr{deploy cancel (\S+)} => sub {
+  on command qr{deploy (?:cancel (\S+)|(\S+) cancel)} => sub {
     my ($self, $irc, $chan, $target) = @_;
 
     if ($self->job($target)) {
@@ -22,7 +22,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  on command qr{deploy start (\S+)} => sub {
+  on command qr{deploy (?:start (\S+)|(\S+) start)} => sub {
     my ($self, $irc, $chan, $target) = @_;
 
     if ($self->job($target)) {
@@ -33,7 +33,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  on command qr{deploy status (\S+)} => sub {
+  on command qr{deploy (?:status (\S+)|status (\S+))} => sub {
     my ($self, $irc, $chan, $target) = @_;
 
     if (my $job = $self->job($target)) {
