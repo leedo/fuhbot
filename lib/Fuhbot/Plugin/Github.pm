@@ -65,6 +65,7 @@ package Fuhbot::Plugin::Github 0.1 {
       }
 
       for my $commit (@commits) {
+        next unless defined $commit;
         http_post "http://git.io",
           "url=$commit->{url}",
           sub {
