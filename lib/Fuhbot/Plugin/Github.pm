@@ -55,7 +55,8 @@ package Fuhbot::Plugin::Github 0.1 {
       my $branch = (split "/", $data->{ref})[-1];
       my @commits = reverse @{$data->{commits}};
 
-      if (my ($source) = $commits[0]{message} =~ m{^merge branch '([^']+)'}i) {
+      my ($source) = $commits[0]{message} =~ m{^merge branch '([^']+)'}i;
+      if ($source and $source ne $branch) {
         my $name = $commits[0]{author}{username} || $commits[0]{author}{name};
         $self->broadcast(
           "Heuristic branch merge on $repo: $name merged " .
