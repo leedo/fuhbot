@@ -33,7 +33,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  on command qr{deploy (?:status (\S+)|status (\S+))} => sub {
+  on command qr{deploy (?:status (\S+)|(\S+) status)} => sub {
     my ($self, $irc, $chan, $target) = @_;
 
     if (my $job = $self->job($target)) {
