@@ -68,7 +68,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     return sub {
       my $job = $self->job($target);
       my @lines = grep {$_} split qr{\015?\012}, $_[0];
-      my @errors = map {"$target: \x034\02$_"} grep {/(ERROR|BUG)/} @lines;
+      my @errors = map {"$target: \x034\02$_"} grep {/(WARNING|ERROR|BUG)/} @lines;
 
       $self->broadcast(@errors);
       push @{$job->{errors}}, @errors;
@@ -106,7 +106,8 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     };
 
     $self->{jobs}{$target}{cv} = run_cmd $command,
-      '>' => $self->on_read($target);
+      '2>' => $self->on_read($target),
+      '>'  => $self->on_read($target);
 
     $self->{jobs}{$target}{cv}->cb(
       $self->on_complete($target));
