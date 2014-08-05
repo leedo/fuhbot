@@ -117,13 +117,12 @@ Use the `event` function to register IRC event handlers.
 This plugin will broadcast a message whenever a topic is changed.
 
 <pre>
-  use v5.14;
+  use v5.20;
 
   package Fuhbot::Plugin::Topic 0.1 {
     use Fuhbot::Plugin;
 
-    on event topic => sub {
-      my ($self, $irc, $msg) = @_;
+    on event topic => sub ($self, $irc, $msg) {
       my ($channel, $topic) = @{$msg->{params}};
       $self->broadcast("$channel has a new topic! $topic");
     };
@@ -141,13 +140,12 @@ by `Fuhbot::Plugin` to register commands.
 The following plugin responds to the line `fuhbot: insult lee`.
 
 <pre>
-  use v5.14
+  use v5.20;
 
   package Fuhbot::Plugin::Insult 0.1 {
     use Fuhbot::Plugin;
     
-    on command insult => sub {
-      my ($self, $irc, $chan, $nick) = @_;
+    on command insult => sub ($self, $irc, $chan, $nick) {
       $irc->send_srv(PRIVMSG => $chan, "fuh $nick");
     }
   }
@@ -163,13 +161,12 @@ creates an HTTP handler and broadcasts a message when `/toot` is
 requested.
 
 <pre>
-  use v5.14;
+  use v5.20;
 
   package Fuhbot::Plugin::Toot 0.1 {
     use Fuhbot::Plugin;
 
-    on get "/toot" => sub {
-      my ($self, $req) = @_;
+    on get "/toot" => sub ($self, $req) {
       $req->respond(["text/plain", "toot!"]);
       $self->broadcast("Someone tooted.");
     };
@@ -186,21 +183,18 @@ This should be used to save all non-configuration related state.
 This plugin implements `quote random` and `quote add` commands.
 
 <pre>
-use v5.14;
+use v5.20;
 
 package Fuhbot::Plugin::Quote 0.1 {
   use Fuhbot::Plugin;
 
-  on command "quote random" => sub {
-    my ($self, $irc, $chan) = @_;
-    $self->brain->srandmember("quotes", sub {
-      my $quote = shift;
+  on command "quote random" => sub ($self, $irc, $chan) {
+    $self->brain->srandmember("quotes", sub ($quote) {
       $self->send_srv(PRIVMSG => $chan, $quote);
     });
   };
 
-  on command qr{quote add\s+(.+)} => sub {
-    my ($self, $irc, $chan, $quote) = @_;
+  on command qr{quote add\s+(.+)} => sub ($self, $irc, $chan, $quote) {
     $self->brain->sadd("quotes", $quote, sub {
       $irc->send_srv(PRIVMSG => $chan, "saved!");
     });
