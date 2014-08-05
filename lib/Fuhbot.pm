@@ -1,4 +1,5 @@
-use v5.14;
+use v5.20;
+use feature 'signatures';
 
 package Fuhbot 0.1 {
   use AnyEvent;
@@ -11,8 +12,7 @@ package Fuhbot 0.1 {
   use List::Util qw/first/;
   use List::MoreUtils qw/any/;
 
-  sub new {
-    my ($class, $file) = @_;
+  sub new ($class, $file) {
     die "config required" unless $file;
 
     my $config = do $file;
@@ -32,8 +32,7 @@ package Fuhbot 0.1 {
     }, $class;
   }
 
-  sub run {
-    my $self = shift;
+  sub run ($self) {
     $self->{cv} = AE::cv;
     my $sigs = AE::signal INT => sub { $self->shutdown };
 
@@ -49,9 +48,7 @@ package Fuhbot 0.1 {
     $self->cleanup;
   }
 
-  sub build_httpd {
-    my $self = shift;
-
+  sub build_httpd ($self) {
     my $listen = $self->config('listen') || "http://0.0.0.0:9091";
     my ($proto, $host, $port) = $listen =~ m{^(https?)://([^:]+):(\d+)};
     my $reverse = $self->config("reverse_http_proxy");
@@ -75,9 +72,7 @@ package Fuhbot 0.1 {
 
   sub shutdown { $_[0]->{cv}->send }
 
-  sub cleanup {
-    my $self = shift;
-
+  sub cleanup ($self) {
     say "\ndisconnecting ircs...";
     my $cv = AE::cv;
 
@@ -93,36 +88,31 @@ package Fuhbot 0.1 {
     $cv->recv;
   }
 
-  sub broadcast {
-    my ($self, $msg, $networks) = @_;
+  sub broadcast ($self, $msg, $networks) {
     my %map = map {my ($n, @c) = split "@"; lc $n, @c ? \@c : undef} @{$networks || []};
     for my $irc ($self->ircs(keys %map)) {
       $irc->broadcast($msg, $map{lc $irc->name});
     }
   }
 
-  sub load_ircs {
-    my $self = shift;
+  sub load_ircs ($self) {
     for my $config (@{$self->config("ircs")}) {
       my $irc = Fuhbot::IRC->new($config);
       $irc->reg_cb("irc_*" => sub { $self->handle_irc_line(@_) });
       $irc->reg_cb("publicmsg" => sub { $self->channel_msg(@_) });
       $irc->reg_cb("privatemsg" => sub { $self->private_msg(@_) });
       $irc->connect;
-      push $self->{ircs}, $irc;
+      push @{$self->{ircs}}, $irc;
     }
   }
 
-  sub load_plugins {
-    my $self = shift;
+  sub load_plugins ($self) {
     for my $config (@{$self->config("plugins")}) {
       $self->load_plugin($config);
     }
   }
 
-  sub load_plugin {
-    my ($self, $config) = @_;
-
+  sub load_plugin ($self, $config) {
     my $class = "Fuhbot::Plugin::$config->{name}";
     eval "use $class";
     die $@ if $@;
@@ -138,11 +128,10 @@ package Fuhbot 0.1 {
     weaken (my $weak = $plugin);
     $weak->prepare_plugin;
 
-    push $self->{plugins}, $plugin;
+    push @{$self->{plugins}}, $plugin;
   }
 
-  sub reload_plugin {
-    my ($self, $name) = @_;
+  sub reload_plugin ($self, $name) {
     delete $INC{"Fuhbot/Plugin/$name.pm"};
 
     my $orig = [ $self->plugins ];
@@ -157,8 +146,7 @@ package Fuhbot 0.1 {
     }
   }
 
-  sub channel_msg {
-    my ($self, $irc, $chan, $msg) = @_;
+  sub channel_msg ($self, $irc, $chan, $msg) {
     my $text = $msg->{params}[-1];
     my $nick = $irc->nick;
 
@@ -167,15 +155,13 @@ package Fuhbot 0.1 {
     }
   }
 
-  sub private_msg {
-    my ($self, $irc, $nick, $msg) = @_;
+  sub private_msg ($self, $irc, $nick, $msg) {
     my $text = $msg->{params}[-1];
     my $sender = AnyEvent::IRC::Util::prefix_nick $msg->{prefix};
     $self->handle_command($irc, $sender, $text);
   }
 
-  sub handle_irc_line {
-    my ($self, $irc, $msg) = @_;
+  sub handle_irc_line ($self, $irc, $msg) {
     # XXX awful method of finding channel name... better?
     my $chan = first {$irc->is_channel_name($_)} @{$msg->{params}};
 
@@ -188,8 +174,7 @@ package Fuhbot 0.1 {
     }
   }
 
-  sub handle_http_req {
-    my ($self, $httpd, $req) = @_;
+  sub handle_http_req ($self, $httpd, $req) {
     my $url = $req->url->path_query;
     for my $route ($self->routes) {
       my ($plugin, $method, $pattern, $cb) = @$route;
@@ -210,9 +195,7 @@ package Fuhbot 0.1 {
     $req->respond([404, "not found", {"Content-Type" => "text/plain"}, 'not found']);
   }
 
-  sub handle_command {
-    my ($self, $irc, $chan, $text) = @_;
-
+  sub handle_command ($self, $irc, $chan, $text) {
     for my $command ($self->commands($irc->name, $chan)) {
       my ($plugin, $pattern, $cb) = @{$command};
       if (my @args = $text =~ m{^$pattern}) {
@@ -224,26 +207,22 @@ package Fuhbot 0.1 {
     }
   }
 
-  sub events {
-    my $self = shift;
+  sub events ($self, @filter) {
     my $p;
-    return map {$p = $_; map {[$p, @$_]} $p->events} $self->plugins(@_);
+    return map {$p = $_; map {[$p, @$_]} $p->events} $self->plugins(@filter);
   }
 
-  sub routes {
-    my $self = shift;
+  sub routes ($self) {
     my $p;
     return map {$p = $_; map {[$p, @$_]} $p->routes} $self->plugins;
   }
 
-  sub commands {
-    my $self = shift;
+  sub commands ($self, @filter) {
     my $p;
-    return map {$p = $_; map {[$p, @$_]} $p->commands} $self->plugins(@_);
+    return map {$p = $_; map {[$p, @$_]} $p->commands} $self->plugins(@filter);
   }
 
-  sub ircs {
-    my ($self, @networks) = @_;
+  sub ircs ($self, @networks) {
     return @{$self->{ircs}} unless @networks;
     grep {
       my $n = $_->name;
@@ -251,8 +230,7 @@ package Fuhbot 0.1 {
     } @{$self->{ircs}}
   }
 
-  sub plugins {
-    my ($self, $network, $chan) = @_;
+  sub plugins ($self, $network="", $chan="") {
     return @{$self->{plugins}} unless $network;
     grep {
       my $i = $_->config("ircs");
@@ -263,8 +241,7 @@ package Fuhbot 0.1 {
     } @{$self->{plugins}};
   }
 
-  sub config {
-    my ($self, $key) = @_;
+  sub config ($self, $key) {
     if ($key) {
       return $self->{config}{$key};
     }
