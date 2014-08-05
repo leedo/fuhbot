@@ -1,4 +1,5 @@
-use v5.14;
+use v5.20;
+use feature 'signatures';
 
 package Fuhbot::Plugin 0.1 {
   sub import {
@@ -11,8 +12,7 @@ package Fuhbot::Plugin 0.1 {
     push @{"$package\::ISA"}, "Fuhbot::Plugin";
 
     my $stash = {commands => [], routes => [], events => []};
-    my $on = sub {
-      my ($type, $val) = @_;
+    my $on = sub ($type, $val) {
       my $handlers = $stash->{$type};
       if (defined $val) {
         push @$handlers, $val;
@@ -37,8 +37,7 @@ package Fuhbot::Plugin 0.1 {
 
   sub prepare_plugin {}
 
-  sub name {
-    my $self = shift;
+  sub name ($self) {
     return $self->config("name");
   }
 
@@ -46,23 +45,20 @@ package Fuhbot::Plugin 0.1 {
     return $_[0]->{brain};
   }
 
-  sub config {
-    my ($self, $key) = @_;
+  sub config ($self, $key="") {
     if ($key) {
       return $self->{config}{$key};
     }
     return $self->{config};
   }
 
-  sub announce {
-    my ($self, $destination, @msgs) = @_;
+  sub announce ($self, $destination, @msgs) {
     if (@msgs) {
       $self->{broadcast}->($_, [$destination]) for @msgs;
     }
   }
 
-  sub broadcast {
-    my ($self, @msgs) = @_;
+  sub broadcast ($self, $msgs) {
     if (@msgs) {
       $self->{broadcast}->($_, $self->config("ircs")) for @msgs;
     }
