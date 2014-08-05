@@ -6,13 +6,16 @@ package Fuhbot::Plugin 0.1 {
     my ($package) = caller;
     return if $package eq "Fuhbot";
 
+    feature->import('signatures');
+    feature->import('switch');
+
     no strict "refs";
     no warnings 'redefine';
 
     push @{"$package\::ISA"}, "Fuhbot::Plugin";
 
     my $stash = {commands => [], routes => [], events => []};
-    my $on = sub ($type, $val) {
+    my $on = sub ($type, $val=undef) {
       my $handlers = $stash->{$type};
       if (defined $val) {
         push @$handlers, $val;
@@ -58,7 +61,7 @@ package Fuhbot::Plugin 0.1 {
     }
   }
 
-  sub broadcast ($self, $msgs) {
+  sub broadcast ($self, @msgs) {
     if (@msgs) {
       $self->{broadcast}->($_, $self->config("ircs")) for @msgs;
     }

@@ -1,5 +1,3 @@
-use v5.14;
-
 package Fuhbot::Plugin::Blobkins 0.1 {
   use Fuhbot::Plugin;
 

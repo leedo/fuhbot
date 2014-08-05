@@ -1,5 +1,3 @@
-use v5.14;
-
 package Fuhbot::Plugin::IsItDown 0.1 {
   use Fuhbot::Plugin;
   use AnyEvent::HTTP;
@@ -24,7 +22,7 @@ package Fuhbot::Plugin::IsItDown 0.1 {
 
     $site = "http://$site" unless $site =~ m{^https?://};
 
-    http_get $site, headers => \%headers, sub  (undef, $headers) {
+    http_get $site, headers => \%headers, sub  ($body, $headers) {
       my $state = $headers->{Status} == 200 ? "up" : "down ($headers->{Reason})";
       $irc->send_srv(PRIVMSG => $chan, "$site is $state");
     };

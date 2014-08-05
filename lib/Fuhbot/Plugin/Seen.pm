@@ -1,5 +1,3 @@
-use v5.14;
-
 package Fuhbot::Plugin::Seen  0.1 {
   use Fuhbot::Plugin;
   use Fuhbot::Util qw/timeago/;
