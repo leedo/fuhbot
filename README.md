@@ -106,7 +106,7 @@ key to your config. It will rewrite the remote host to the
 
 ## Writing plugins
 
-Plugins should inherit from `Fuhbot::Plugin`, and can use the
+Plugins should import `Fuhbot::Plugin`, and can use the
 `prepare_plugin` method to setup any attributes when the bot is
 started.
 
