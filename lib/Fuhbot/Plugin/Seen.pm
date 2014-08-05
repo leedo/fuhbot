@@ -10,6 +10,7 @@ package Fuhbot::Plugin::Seen  0.1 {
     my ($self, $irc, $msg) = @_;
     my $chan = $msg->{params}[0];
     my ($nick) = split_prefix $msg->{prefix};
+    $nick =~ s/_+$//;
     my $key = join "-", $nick, $chan, $irc->name;
     my $line = "< $nick> $msg->{params}[-1]";
     $self->brain->set(lc $key, encode_json [time, $line], sub {});
@@ -17,6 +18,7 @@ package Fuhbot::Plugin::Seen  0.1 {
 
   on command qr{seen\s+([^\s]+)} => sub{
     my ($self, $irc, $chan, $nick) = @_;
+    $nick =~ s/_+$//;
 
     my $key = join "-", $nick, $chan, $irc->name;
     $self->brain->get(lc $key, sub {
