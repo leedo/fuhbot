@@ -182,7 +182,7 @@ package Fuhbot::Plugin::Quote 0.1 {
 
   on command "quote random" => sub ($self, $irc, $chan) {
     $self->brain->srandmember("quotes", sub ($quote) {
-      $self->send_srv(PRIVMSG => $chan, $quote);
+      $irc->send_srv(PRIVMSG => $chan, $quote);
     });
   };
 
