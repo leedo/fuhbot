@@ -2,7 +2,6 @@ use v5.14;
 
 package Fuhbot::Plugin::Insult 0.1 {
   use Fuhbot::Plugin;
-  use Encode;
 
   on command qr{(insult|praise)\s*(.*)} => sub {
     my ($self, $irc, $chan, $type, $nick) = @_;
