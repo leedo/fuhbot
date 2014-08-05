@@ -3,8 +3,7 @@ use v5.14;
 package Fuhbot::Plugin::Insult 0.1 {
   use Fuhbot::Plugin;
 
-  on command qr{(insult|praise)\s*(.*)} => sub {
-    my ($self, $irc, $chan, $type, $nick) = @_;
+  on command qr{(insult|praise)\s*(.*)} => sub  ($self, $irc, $chan, $type, $nick) {
     if (!$nick) {
       my @nicks = keys %{$irc->channel_list($chan) || {}};
       return unless @nicks;
@@ -24,8 +23,7 @@ package Fuhbot::Plugin::Insult 0.1 {
     });
   };
 
-  on command qr{(add|rem) (insult|praise)\s+(.+)} => sub {
-    my ($self, $irc, $chan, $action, $type, $insult) = @_;
+  on command qr{(add|rem) (insult|praise)\s+(.+)} => sub  ($self, $irc, $chan, $action, $type, $insult) {
     my $m = "s$action";
     $self->brain->$m($type . "s", $insult, sub {
       $self->brain->setex("last-$chan-$type", 300, $insult);
@@ -33,8 +31,7 @@ package Fuhbot::Plugin::Insult 0.1 {
     });
   };
 
-  on command qr{rem last(insult|praise)} => sub {
-    my ($self, $irc, $chan, $type) = @_;
+  on command qr{rem last(insult|praise)} => sub  ($self, $irc, $chan, $type) {
     $self->brain->get("last-$chan-$type", sub {
       my $insult = $_[0];
       if ($insult) {

@@ -11,8 +11,7 @@ package Fuhbot::Plugin::RunCmd 0.1 {
     if (my $commands = $self->config("commands")) {
       for my $command (@$commands) {
         my ($name, $pattern, $line) = @$command;
-        on command $pattern => sub {
-          my ($self, $irc, $chan, @args) = @_;
+        on command $pattern => sub  ($self, $irc, $chan, @args) {
           if ($self->{jobs}{$name}) {
             return $irc->send_srv(PRIVMSG => $chan, "$name is already running");
           }

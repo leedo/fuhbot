@@ -20,8 +20,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
     };
   }
 
-  sub api_url {
-    my ($self, $path, %params) = @_;
+  sub api_url ($self, $path, %params) {
 
     $params{apikey} ||= $self->config("key");
     $params{secret} ||= $self->config("secret");
@@ -34,8 +33,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
     my $self = shift;
     my $url = $self->api_url("realtime/authors", time => "1h");
 
-    http_get $url, sub {
-      my ($body, $headers) = @_;
+    http_get $url, sub  ($body, $headers) {
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
         my @authors = map {$_->{author}} @{$data->{data}};

@@ -14,8 +14,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
     $self->{timer} = AE::timer 0, 60 * 15, sub { $self->check_feeds };
   }
 
-  sub grep_entry {
-    my ($self, $entry) = @_;
+  sub grep_entry ($self, $entry) {
     my $patterns = $self->config("patterns") || [];
 
     return () unless @$patterns;
@@ -61,8 +60,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
 
     for my $url (@$feeds) {
       $cv->begin;
-      Fuhbot::Util::http_get $url, sub {
-        my ($body, $headers) = @_;
+      Fuhbot::Util::http_get $url, sub  ($body, $headers) {
         return () unless $headers->{Status} == 200;
 
         my $body = decode "utf-8", $body;

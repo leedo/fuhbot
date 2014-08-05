@@ -10,8 +10,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{jobs} = {};
   }
 
-  on command qr{deploy (?:cancel (\S+)|(\S+) cancel)} => sub {
-    my ($self, $irc, $chan, $target) = @_;
+  on command qr{deploy (?:cancel (\S+)|(\S+) cancel)} => sub  ($self, $irc, $chan, $target) {
 
     if ($self->job($target)) {
       delete $self->{jobs}{$target};
@@ -22,8 +21,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  on command qr{deploy (?:start (\S+)|(\S+) start)} => sub {
-    my ($self, $irc, $chan, $target) = @_;
+  on command qr{deploy (?:start (\S+)|(\S+) start)} => sub  ($self, $irc, $chan, $target) {
 
     if ($self->job($target)) {
       $irc->send_srv(PRIVMSG => $chan, "$target deploy already in progress");
@@ -33,8 +31,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  on command qr{deploy (?:status (\S+)|(\S+) status)} => sub {
-    my ($self, $irc, $chan, $target) = @_;
+  on command qr{deploy (?:status (\S+)|(\S+) status)} => sub  ($self, $irc, $chan, $target) {
 
     if (my $job = $self->job($target)) {
       $irc->send_srv(PRIVMSG => $chan, "$target: deploy in progress");
@@ -47,23 +44,20 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  sub job_command {
-    my ($self, $target) = @_;
+  sub job_command ($self, $target) {
     my $targets = $self->config("targets");
     if (defined $targets and defined $targets->{$target}) {
       return $targets->{$target};
     }
   }
 
-  sub job {
-    my ($self, $target) = @_;
+  sub job ($self, $target) {
     if (defined $self->{jobs}{$target}) {
       return $self->{jobs}{$target};
     }
   }
 
-  sub on_read {
-    my ($self, $target) = @_;
+  sub on_read ($self, $target) {
 
     return sub {
       my $job = $self->job($target);
@@ -79,8 +73,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     };
   }
 
-  sub on_complete {
-    my ($self, $target) = @_;
+  sub on_complete ($self, $target) {
 
     return sub {
       my $job = $self->job($target);
@@ -90,8 +83,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     };
   }
 
-  sub spawn {
-    my ($self, $target) = @_;
+  sub spawn ($self, $target) {
     my $command = $self->job_command($target);
 
     if (!$command) {
