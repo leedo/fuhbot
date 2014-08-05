@@ -8,8 +8,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{jobs} = {};
   }
 
-  on command qr{deploy (?:cancel (\S+)|(\S+) cancel)} => sub  ($self, $irc, $chan, $target) {
-
+  on command qr{deploy (?:cancel (\S+)|(\S+) cancel)} => sub ($self, $irc, $chan, $target) {
     if ($self->job($target)) {
       delete $self->{jobs}{$target};
       $self->broadcast("$target: deploy canceled");
@@ -19,8 +18,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  on command qr{deploy (?:start (\S+)|(\S+) start)} => sub  ($self, $irc, $chan, $target) {
-
+  on command qr{deploy (?:start (\S+)|(\S+) start)} => sub ($self, $irc, $chan, $target) {
     if ($self->job($target)) {
       $irc->send_srv(PRIVMSG => $chan, "$target deploy already in progress");
     }
@@ -29,8 +27,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     }
   };
 
-  on command qr{deploy (?:status (\S+)|(\S+) status)} => sub  ($self, $irc, $chan, $target) {
-
+  on command qr{deploy (?:status (\S+)|(\S+) status)} => sub ($self, $irc, $chan, $target) {
     if (my $job = $self->job($target)) {
       $irc->send_srv(PRIVMSG => $chan, "$target: deploy in progress");
       if (scalar @{$job->{errors}}) {
@@ -56,7 +53,6 @@ package Fuhbot::Plugin::ChefClient 0.1 {
   }
 
   sub on_read ($self, $target) {
-
     return sub {
       my $job = $self->job($target);
       my @lines = grep {$_} split qr{\015?\012}, $_[0];
@@ -72,7 +68,6 @@ package Fuhbot::Plugin::ChefClient 0.1 {
   }
 
   sub on_complete ($self, $target) {
-
     return sub {
       my $job = $self->job($target);
 

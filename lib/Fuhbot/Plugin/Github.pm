@@ -5,15 +5,14 @@ package Fuhbot::Plugin::Github 0.1 {
   use Date::Parse;
   use JSON::XS;
 
-  on command "github status" => sub  ($self, $irc, $chan) {
-
+  on command "github status" => sub ($self, $irc, $chan) {
     my %colors = (
       'good' => "\x033",
       'minor' => "\x037",
       'major' => "\x034",
     ); 
 
-    http_get "https://status.github.com/api/messages.json" => sub  ($body, $headers) {
+    http_get "https://status.github.com/api/messages.json" => sub ($body, $headers) {
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
         my $cv = AE::cv;
@@ -39,8 +38,7 @@ package Fuhbot::Plugin::Github 0.1 {
     };
   };
 
-  on post "/github" => sub  ($self, $req) {
-
+  on post "/github" => sub ($self, $req) {
     $req->respond({ content => ["text/plain", "o ok"] });
     my $payload = $req->parm("payload");
 
@@ -64,7 +62,7 @@ package Fuhbot::Plugin::Github 0.1 {
         next unless defined $commit;
         http_post "http://git.io",
           "url=$commit->{url}",
-          sub  ($body, $headers) {
+          sub ($body, $headers) {
             my $url = $headers->{location} || $commit->{url};
 
             my @files = map {@{$commit->{$_}}} qw/modified removed added/;

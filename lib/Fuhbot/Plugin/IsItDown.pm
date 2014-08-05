@@ -3,11 +3,11 @@ package Fuhbot::Plugin::IsItDown 0.1 {
   use AnyEvent::HTTP;
   use MIME::Base64 ();
 
-  on command qr{isitdown (.+)} => sub  ($self, $irc, $chan, $site) {
+  on command qr{isitdown (.+)} => sub ($self, $irc, $chan, $site) {
     $self->check_site($irc, $chan, $site);
   };
 
-  on command qr{is([^\s]+)down} => sub  ($self, $irc, $chan, $alias) {
+  on command qr{is([^\s]+)down} => sub ($self, $irc, $chan, $alias) {
     if (my $site = ($self->config("sites") || {})->{$alias}) {
       $self->check_site($irc, $chan, $site);
     }
@@ -22,7 +22,7 @@ package Fuhbot::Plugin::IsItDown 0.1 {
 
     $site = "http://$site" unless $site =~ m{^https?://};
 
-    http_get $site, headers => \%headers, sub  ($body, $headers) {
+    http_get $site, headers => \%headers, sub ($body, $headers) {
       my $state = $headers->{Status} == 200 ? "up" : "down ($headers->{Reason})";
       $irc->send_srv(PRIVMSG => $chan, "$site is $state");
     };
