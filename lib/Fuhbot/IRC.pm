@@ -1,4 +1,5 @@
-use v5.14;
+use v5.20;
+use feature 'signatures';
 
 {
   use AnyEvent::IRC::Connection;
@@ -7,8 +8,7 @@ use v5.14;
   no warnings;
 
   # YUCK!!!
-  *AnyEvent::IRC::Connection::_feed_irc_data = sub {
-    my ($self, $line) = @_;
+  *AnyEvent::IRC::Connection::_feed_irc_data = sub ($self, $line) {
     my $m = parse_irc_msg (decode ("utf8", $line));
     $self->event (read => $m);
     $self->event ('irc_*' => $m);
@@ -24,8 +24,7 @@ package Fuhbot::IRC 0.1 {
   use parent 'AnyEvent::IRC::Client';
   use Encode;
 
-  sub new {
-    my ($class, $config) = @_;
+  sub new ($class, $config) {
     die "irc config must include nick" unless defined $config->{nick};
     my $self = $class->SUPER::new;
     $self->{fuhbot_config} = $config;
@@ -33,7 +32,7 @@ package Fuhbot::IRC 0.1 {
     return $self;
   }
 
-  sub setup_events {
+  sub setup_events ($self) {
     my $self = shift;
     $self->ctcp_auto_reply ('VERSION', ['VERSION', 'irssi v0.8.15']);
     $self->{reconnect_cb} = sub {$self->reconnect};
@@ -42,15 +41,13 @@ package Fuhbot::IRC 0.1 {
     $self->reg_cb(disconnect => $self->{reconnect_cb});
   }
 
-  sub shutdown {
-    my ($self, $cb) = @_;
+  sub shutdown ($self, $cb) {
     $self->unreg_cb($self->{reconnect_cb});
     $self->reg_cb(disconnect => $cb);
     $self->send_srv(QUIT => "fuhbot");
   }
 
-  sub reconnect {
-    my $self = shift;
+  sub reconnect ($self) {
     $self->{reconnect_timer} = AE::timer 5, 0, sub {
       $self->connect;
     }
@@ -58,8 +55,7 @@ package Fuhbot::IRC 0.1 {
   
   sub name { $_[0]->config("name") }
 
-  sub config {
-    my ($self, $key) = @_;
+  sub config ($self, $key=undef) {
     if (defined $key) {
       return $self->{fuhbot_config}{$key};
     }
@@ -67,8 +63,7 @@ package Fuhbot::IRC 0.1 {
     return $self->{fuhbot_config};
   }
 
-  sub connect {
-    my $self = shift;
+  sub connect ($self) {
     $self->enable_ssl if $self->config("ssl");
     $self->disconnect;
 
@@ -82,15 +77,13 @@ package Fuhbot::IRC 0.1 {
     $self->reconnect; 
   }
 
-  sub join_channels {
-    my $self = shift;
+  sub join_channels ($self) {
     for my $channel (@{$self->config("channels")}) {
       $self->send_srv(JOIN => split /\s+/, $channel);
     }
   }
 
-  sub broadcast {
-    my ($self, $msg, $channels) = @_;
+  sub broadcast ($self, $msg, $channels) {
     $channels ||= [keys %{$self->channel_list}];
     for my $channel (@$channels) {
       $self->send_srv(PRIVMSG => $channel, $msg);

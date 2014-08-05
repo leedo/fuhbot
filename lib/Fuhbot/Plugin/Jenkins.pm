@@ -1,13 +1,9 @@
-use v5.14;
-
 package Fuhbot::Plugin::Jenkins 0.1 {
   use Fuhbot::Plugin;
   use Fuhbot::Util qw/shorten/;
   use JSON::XS;
  
-  on get "/jenkins" => sub {
-    my ($self, $req) = @_;
-
+  on get "/jenkins" => sub ($self, $req) {
     $req->respond({ content => ["text/plain", "o ok"] });
     my ($payload) = $req->vars; # wut
 

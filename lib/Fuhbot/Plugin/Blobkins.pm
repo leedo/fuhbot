@@ -1,10 +1,7 @@
-use v5.14;
-
 package Fuhbot::Plugin::Blobkins 0.1 {
   use Fuhbot::Plugin;
 
-  on command "brodkin" => sub { 
-    my ($self, $irc, $chan) = @_;
+  on command "brodkin" => sub ($self, $irc, $chan) {
     my $first = rands(qw{G J}) . vowels(3) . rands(qw{n rb});
     my $last = "B" . rands(qw{l r}) . vowels(4) . rands(qw{k bk lk dk}) . vowels(1) . rands("n", "ns");
     $irc->send_srv(PRIVMSG => $chan, "$first $last");

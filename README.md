@@ -9,7 +9,7 @@ carton exec -Ilib -- bin/fuhbot config.pl
 
 fuhbot is a simple IRC bot with a administrative console and plugin
 system. Plugins have access to IRC and HTTP events, and can send
-messages to users or channels.
+messages to users or channels. perl 5.20.0 is required.
 
 ## Configuration
 
@@ -117,8 +117,6 @@ Use the `event` function to register IRC event handlers.
 This plugin will broadcast a message whenever a topic is changed.
 
 <pre>
-  use v5.20;
-
   package Fuhbot::Plugin::Topic 0.1 {
     use Fuhbot::Plugin;
 
@@ -140,8 +138,6 @@ by `Fuhbot::Plugin` to register commands.
 The following plugin responds to the line `fuhbot: insult lee`.
 
 <pre>
-  use v5.20;
-
   package Fuhbot::Plugin::Insult 0.1 {
     use Fuhbot::Plugin;
     
@@ -161,8 +157,6 @@ creates an HTTP handler and broadcasts a message when `/toot` is
 requested.
 
 <pre>
-  use v5.20;
-
   package Fuhbot::Plugin::Toot 0.1 {
     use Fuhbot::Plugin;
 
@@ -183,8 +177,6 @@ This should be used to save all non-configuration related state.
 This plugin implements `quote random` and `quote add` commands.
 
 <pre>
-use v5.20;
-
 package Fuhbot::Plugin::Quote 0.1 {
   use Fuhbot::Plugin;
 

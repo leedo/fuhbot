@@ -1,4 +1,5 @@
-use v5.14;
+use v5.20;
+use feature 'signatures';
 
 package Fuhbot::Util 0.1 {
   use AnyEvent::HTTP ();
@@ -29,9 +30,7 @@ package Fuhbot::Util 0.1 {
 
     $opts{cookie_jar} = {} unless defined $opts{cookie_jar};
 
-    AnyEvent::HTTP::http_get $url, %opts, sub {
-      my ($body, $headers) = @_;
-
+    AnyEvent::HTTP::http_get $url, %opts, sub ($body, $headers) {
       my $enc = $headers->{"content-encoding"};
       if (defined $enc and $enc eq "gzip") {
         eval { "use IO::Uncompress::Gunzip qw{gunzip};" };
@@ -45,9 +44,7 @@ package Fuhbot::Util 0.1 {
     };
   }
 
-  sub timeago {
-    my $time = shift;
-
+  sub timeago ($time) {
     my $min = 60;
     my $hour = $min * 60;
     my $day = $hour * 24;
@@ -99,15 +96,13 @@ package Fuhbot::Util 0.1 {
     }
   }
  
-  sub gist {
-    my ($name, $content, $cb) = @_;
+  sub gist ($name, $content, $cb) {
     AnyEvent::HTTP::http_post "https://api.github.com/gists",
       encode_json({
         public => JSON::XS::false,
         files => {$name => {content => $content}},
       }),
-      sub {
-        my ($body, $headers) = @_;
+      sub ($body, $headers) {
         my $data = decode_json $body;
         $cb->($data->{html_url});
       };
@@ -122,10 +117,8 @@ package Fuhbot::Util 0.1 {
     return $prefix;
   }
 
-  sub resolve_title {
-    my ($url, $cb) = @_;
-    Fuhbot::Util::http_get $url, sub {
-      my ($body, $headers) = @_;
+  sub resolve_title ($url, $cb) {
+    Fuhbot::Util::http_get $url, sub ($body, $headers) {
       my ($in_title, $title);
       if ($headers->{Status} == 200) {
         my $p = HTML::Parser->new(

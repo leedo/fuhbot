@@ -1,16 +1,12 @@
-use v5.14;
-
 package Fuhbot::Plugin::URLTitle {
   use Fuhbot::Plugin;
   use Fuhbot::Util;
-
   use AnyEvent::IRC::Util qw/prefix_nick/;
   use HTML::Entities;
   use IRC::Formatting::HTML qw/html_to_irc/;
   use Encode;
 
-  on event privmsg => sub {
-    my ($self, $irc, $msg) = @_;
+  on event privmsg => sub ($self, $irc, $msg) {
     my ($chan, $text) = @{$msg->{params}};
     if ($text =~ m{(https?://[^\s]+)}) {
       my $url = $1;

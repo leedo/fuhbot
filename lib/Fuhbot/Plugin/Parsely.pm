@@ -1,13 +1,9 @@
-use v5.14;
-
 package Fuhbot::Plugin::Parsely 0.1 {
   use Fuhbot::Plugin;
   use AnyEvent::HTTP;
   use JSON::XS;
 
-  sub prepare_plugin {
-    my $self = shift;
-
+  sub prepare_plugin ($self) {
     die "need API secret and key"
       unless defined $self->config("secret")
          and defined $self->config("key");
@@ -20,9 +16,7 @@ package Fuhbot::Plugin::Parsely 0.1 {
     };
   }
 
-  sub api_url {
-    my ($self, $path, %params) = @_;
-
+  sub api_url ($self, $path, %params) {
     $params{apikey} ||= $self->config("key");
     $params{secret} ||= $self->config("secret");
     my $query = join "&", map {"$_=$params{$_}"} keys %params;
@@ -30,12 +24,10 @@ package Fuhbot::Plugin::Parsely 0.1 {
     return "http://api.parsely.com/v2/$path?$query";
   }
 
-  sub check_parsely {
-    my $self = shift;
+  sub check_parsely ($self) {
     my $url = $self->api_url("realtime/authors", time => "1h");
 
-    http_get $url, sub {
-      my ($body, $headers) = @_;
+    http_get $url, sub ($body, $headers) {
       if ($headers->{Status} == 200) {
         my $data = decode_json $body;
         my @authors = map {$_->{author}} @{$data->{data}};
