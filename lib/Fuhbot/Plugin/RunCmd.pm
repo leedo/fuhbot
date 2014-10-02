@@ -14,7 +14,9 @@ package Fuhbot::Plugin::RunCmd 0.1 {
           }
 
           if (ref $line and ref $line eq "CODE") {
-            return $irc->send_srv(PRIVMSG => $chan, $line->(@args));
+            my @lines = $line->(@args);
+            $irc->send_srv(PRIVMSG => $chan, $_) for @lines;
+            return;
           }
 
           $self->{jobs}{$name} = run_cmd sprintf($line, @args),
