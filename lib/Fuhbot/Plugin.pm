@@ -1,13 +1,13 @@
 use v5.20;
-use feature 'signatures';
+use experimental 'signatures';
 
 package Fuhbot::Plugin 0.1 {
   sub import {
     my ($package) = caller;
     return if $package eq "Fuhbot";
 
-    feature->import('signatures');
-    feature->import('switch');
+    experimental->import('signatures');
+    experimental->import('switch');
 
     no strict "refs";
     no warnings 'redefine';

@@ -1,5 +1,5 @@
 use v5.20;
-use feature 'signatures';
+use experimental 'signatures';
 
 package Fuhbot::Util 0.1 {
   use AnyEvent::HTTP ();
