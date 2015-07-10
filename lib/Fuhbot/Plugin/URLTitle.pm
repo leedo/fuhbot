@@ -2,9 +2,7 @@ package Fuhbot::Plugin::URLTitle {
   use Fuhbot::Plugin;
   use Fuhbot::Util;
   use AnyEvent::IRC::Util qw/prefix_nick/;
-  use HTML::Entities;
   use IRC::Formatting::HTML qw/html_to_irc/;
-  use Encode;
 
   on event privmsg => sub ($self, $irc, $msg) {
     my ($chan, $text) = @{$msg->{params}};
