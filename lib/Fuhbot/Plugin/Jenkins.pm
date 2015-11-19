@@ -3,9 +3,9 @@ package Fuhbot::Plugin::Jenkins 0.1 {
   use Fuhbot::Util qw/shorten/;
   use JSON::XS;
  
-  on get "/jenkins" => sub ($self, $req) {
+  on post "/jenkins" => sub ($self, $req) {
     $req->respond({ content => ["text/plain", "o ok"] });
-    my ($payload) = $req->vars; # wut
+    my ($payload) = $req->content;
 
     if ($payload) {
       my $data = decode_json $payload;
