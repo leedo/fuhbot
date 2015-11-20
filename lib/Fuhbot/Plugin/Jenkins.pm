@@ -10,12 +10,14 @@ package Fuhbot::Plugin::Jenkins 0.1 {
     if ($payload) {
       my $data = decode_json $payload;
       my $build = $data->{build};
-      my $name = $data->{name};
       my $prefix = $self->config("url");
-      shorten "$prefix/$build->{url}", sub {
-        my $url = shift;
-        $self->broadcast("build #$build->{number} of $name has $build->{phase} $build->{status} - $url");
-      };
+
+      $self->broadcast(
+        sprintf "build #%s of %s has %s [%s] - %s",
+          $build->{number}, $data->{name},
+          lc($build->{phase}), lc($build->{status} =~ s/_/ /gr),
+          "$prefix/$build->{url}"
+      );
     }
   };
 }
