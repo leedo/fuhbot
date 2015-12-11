@@ -165,6 +165,10 @@ package Fuhbot 0.1 {
     # XXX awful method of finding channel name... better?
     my $chan = first {$irc->is_channel_name($_)} @{$msg->{params}};
 
+    if ($msg->{command} eq "PRIVMSG" and $msg->{params}[0] eq $irc->nick) {
+      $chan = AnyEvent::IRC::Util::prefix_nick $msg->{prefix};
+    }
+
     for my $event ($self->events($irc->name, $chan)) {
       my ($plugin, $event, $cb) = @$event;
       if (lc $msg->{command} eq $event) {

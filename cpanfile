@@ -13,3 +13,5 @@ requires 'HTML::Entities';
 requires 'MIME::Base64';
 requires 'Net::SSLeay';
 requires 'Net::CIDR::Lite';
+requires 'Date::Parse';
+requires 'DateTime';
