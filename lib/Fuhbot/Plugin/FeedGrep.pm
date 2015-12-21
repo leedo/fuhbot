@@ -88,7 +88,7 @@ package Fuhbot::Plugin::FeedGrep 0.1 {
         $self->brain->sismember("feedgrep-$url", $entry->id, sub {
           my $seen = shift;
           if (!$seen) {
-            $self->broadcast(sprintf('"%s" appeared on %s - %s', $title, map { decode "utf8", $_ } $feed->title, $feed->link));
+            $self->broadcast(sprintf('"%s" appeared on %s', $title, map { decode "utf8", $_ } $feed->title));
             $self->brain->sadd("feedgrep-$url", $entry->id, sub {});
           }
         });
