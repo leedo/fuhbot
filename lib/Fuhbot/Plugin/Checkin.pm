@@ -7,12 +7,16 @@ package Fuhbot::Plugin::Checkin  0.1 {
   use JSON::XS;
 
   on event privmsg => sub ($self, $irc, $msg) {
+    my $watch = $self->config("watch");
+    my $chan = $msg->{params}[0];
+
+    return unless lc $chan eq lc $watch;
+
+    my $members = $self->config("members");
     my ($nick) = split_prefix $msg->{prefix};
     $nick =~ s/_+$//;
 
-    my $watchlist = $self->config("members");
-
-    if (any {lc $_ eq lc $nick} @$watchlist) {
+    if (any {lc $_ eq lc $nick} @$members) {
       my $key = lc join "-", "status", $self->config("groupname");
       my $dayend = DateTime->now->add(days => 1)->truncate(to => "day");
       $self->brain->sadd($key, $nick, sub {});
