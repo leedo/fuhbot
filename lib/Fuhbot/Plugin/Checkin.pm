@@ -21,7 +21,10 @@ package Fuhbot::Plugin::Checkin  0.1 {
   };
 
   on command qr{status} => sub ($self, $irc, $chan) {
+    my $masters = $self->config("masters");
     my $key = lc join "-", "status", $self->config("groupname");
+
+    return unless any { lc $chan eq lc $_ } @$masters;
 
     $self->brain->smembers($key, sub ($members) {
       my $watchlist = $self->config("members");
