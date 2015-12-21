@@ -1,10 +1,8 @@
 package Fuhbot::Plugin::Checkin  0.1 {
   use Fuhbot::Plugin;
-  use Fuhbot::Util qw/timeago/;
-  use AnyEvent::IRC::Util qw/split_prefix/;
+  use AnyEvent::IRC::Util qw{split_prefix};
   use List::Util qw{any};
   use DateTime;
-  use JSON::XS;
 
   on event privmsg => sub ($self, $irc, $msg) {
     my $watch = $self->config("watch");
@@ -31,10 +29,10 @@ package Fuhbot::Plugin::Checkin  0.1 {
     return unless any { lc $chan eq lc $_ } @$masters;
 
     $self->brain->smembers($key, sub ($members) {
-      my $watchlist = $self->config("members");
+      my $members = $self->config("members");
       my @missing;
 
-      for my $watch (@$watchlist) {
+      for my $watch (@$members) {
         if (! any {$_ eq $watch} @$members) {
           push @missing, $watch;
         }
