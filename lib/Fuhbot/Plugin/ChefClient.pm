@@ -8,7 +8,7 @@ package Fuhbot::Plugin::ChefClient 0.1 {
     $self->{jobs} = {};
   }
 
-  on command qr{deploy cancel (\S+))} => sub ($self, $irc, $chan, $target) {
+  on command qr{deploy cancel (\S+)} => sub ($self, $irc, $chan, $target) {
     if ($self->job($target)) {
       delete $self->{jobs}{$target};
       $self->broadcast("$target: deploy canceled");
