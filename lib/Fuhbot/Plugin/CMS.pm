@@ -20,7 +20,7 @@ package Fuhbot::Plugin::CMS 0.1 {
           }
         };
         my $message = html_to_irc $data->{message};
-        my $cms = $data->{domain} ? "$data->{domain} CMS" || "CMS";
+        my $cms = $data->{domain} ? "$data->{domain} CMS" : "CMS";
         $self->broadcast("\x03$color\x02$cms $data->{type}:\x02\x03 $message - $url");
       });
     }
