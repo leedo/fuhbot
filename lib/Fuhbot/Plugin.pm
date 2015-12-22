@@ -14,7 +14,7 @@ package Fuhbot::Plugin 0.1 {
 
     push @{"$package\::ISA"}, "Fuhbot::Plugin";
 
-    my $stash = {commands => [], routes => [], events => []};
+    my $stash = {commands => [], routes => [], events => [], crons => []};
     my $on = sub ($type, $val=undef) {
       my $handlers = $stash->{$type};
       if (defined $val) {
@@ -27,7 +27,9 @@ package Fuhbot::Plugin 0.1 {
     *{"$package\::events"}   = sub { $on->("events") };
     *{"$package\::commands"} = sub { $on->("commands") };
     *{"$package\::routes"}   = sub { $on->("routes") };
+    *{"$package\::crons"}    = sub { $on->("crons") };
     *{"$package\::command"}  = sub { "commands", [@_] };
+    *{"$package\::cron"}     = sub { "crons", [@_] };
     *{"$package\::get"}      = sub { "routes", [get => @_] };
     *{"$package\::post"}     = sub { "routes", [post => @_] };
     *{"$package\::event"}    = sub { "events", [@_] };

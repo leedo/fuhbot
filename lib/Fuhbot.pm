@@ -4,6 +4,7 @@ use experimental 'signatures';
 package Fuhbot 0.1 {
   use AnyEvent;
   use AnyEvent::IRC::Util;
+  use DateTime::Event::Cron;
   use Fuhbot::IRC;
   use AnyEvent::HTTPD;
   use AnyEvent::Redis;
@@ -39,6 +40,7 @@ package Fuhbot 0.1 {
     say "loading plugins...";
     $self->load_plugins;
 
+    $self->build_cron if $self->crons;
     $self->build_httpd if $self->routes;
 
     say "loading ircs...";
@@ -46,6 +48,18 @@ package Fuhbot 0.1 {
 
     $self->{cv}->recv;
     $self->cleanup;
+  }
+
+  sub build_cron ($self) {
+    $self->{timer} = AE::timer 0, 60, sub {
+      for ($self->crons) {
+        my ($plugin, $job, $cb) = @$_;
+        my $c = DateTime::Event::Cron->new($job);
+        if ($c->match) {
+          $cb->($plugin);
+        }
+      }
+    };
   }
 
   sub build_httpd ($self) {
@@ -214,6 +228,11 @@ package Fuhbot 0.1 {
   sub events ($self, @filter) {
     my $p;
     return map {$p = $_; map {[$p, @$_]} $p->events} $self->plugins(@filter);
+  }
+
+  sub crons ($self, @filter) {
+    my $p;
+    return map {$p = $_; map {[$p, @$_]} $_->crons} $self->plugins;
   }
 
   sub routes ($self) {
