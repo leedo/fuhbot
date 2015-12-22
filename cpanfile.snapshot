@@ -153,6 +153,17 @@ DISTRIBUTIONS
       vars 0
       warnings 0
       warnings::register 0
+  DateTime-Event-Cron-0.08
+    pathname: M/MS/MSISK/DateTime-Event-Cron-0.08.tar.gz
+    provides:
+      DateTime::Event::Cron 0.08
+      DateTime::Event::Cron::IntegratedSet 0.08
+      DateTime::Event::Cron::OrderedSet 0.08
+    requirements:
+      DateTime 0.21
+      DateTime::Set 0.1406
+      ExtUtils::MakeMaker 0
+      Set::Crontab 0
   DateTime-Format-Mail-0.402
     pathname: B/BO/BOOK/DateTime-Format-Mail-0.402.tar.gz
     provides:
@@ -656,6 +667,18 @@ DISTRIBUTIONS
       strict 0
       utf8 0
       warnings 0
+  DateTime-Set-0.3600
+    pathname: F/FG/FGLOCK/DateTime-Set-0.3600.tar.gz
+    provides:
+      DateTime::Set 0.3600
+      DateTime::Span undef
+      DateTime::SpanSet undef
+      Set::Infinite::_recurrence undef
+    requirements:
+      DateTime 0.12
+      Params::Validate 0
+      Set::Infinite 0.59
+      Test::More 0
   DateTime-TimeZone-1.92
     pathname: D/DR/DROLSKY/DateTime-TimeZone-1.92.tar.gz
     provides:
@@ -1410,6 +1433,22 @@ DISTRIBUTIONS
       strict 0
       vars 0
       warnings 0
+  Set-Crontab-1.03
+    pathname: A/AM/AMS/Set-Crontab-1.03.tar.gz
+    provides:
+      Set::Crontab 1.03
+    requirements:
+      ExtUtils::MakeMaker 0
+  Set-Infinite-0.65
+    pathname: F/FG/FGLOCK/Set-Infinite-0.65.tar.gz
+    provides:
+      Set::Infinite 0.65
+      Set::Infinite::Arithmetic undef
+      Set::Infinite::Basic undef
+    requirements:
+      ExtUtils::MakeMaker 0
+      Test::More 0
+      Time::Local 0
   Test-Manifest-2.02
     pathname: B/BD/BDFOY/Test-Manifest-2.02.tar.gz
     provides:

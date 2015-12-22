@@ -15,3 +15,4 @@ requires 'Net::SSLeay';
 requires 'Net::CIDR::Lite';
 requires 'Date::Parse';
 requires 'DateTime';
+requires 'DateTime::Event::Cron';
