@@ -169,6 +169,21 @@ requested.
   1;
 </pre>
 
+### Timed events
+
+Cron-like behavior is also possible to plugins. The plugin below will
+message a channel every minute.
+
+<pre>
+  package Fuhbot::Plugin::Toot 0.1 {
+    use Fuhbot::Plugin;
+
+    on cron "* * * * *" => sub ($self) {
+      $self->announce("network@#channel", "too0000oot");
+    };
+  }
+</pre>
+
 ### Saving state
 
 Plugins have a `brain` method that gives access to a Redis client.
