@@ -1,4 +1,4 @@
-package Fuhbot::Plugin::Lists 0.1 {
+package Fuhbot::Plugin::Sets 0.1 {
   use Fuhbot::Plugin;
 
   on command qr{^add ([^\s]+) (.+)$} => sub ($self, $irc, $chan, $key, $value) {
