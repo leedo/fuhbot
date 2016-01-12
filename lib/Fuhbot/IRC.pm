@@ -36,10 +36,7 @@ package Fuhbot::IRC 0.1 {
   sub setup_events ($self) {
     my $self = shift;
     $self->ctcp_auto_reply ('VERSION', ['VERSION', 'irssi v0.8.15']);
-    $self->{reconnect_cb} = sub {
-      Fuhbot::Log::info("IRC reconnecting to " . $self->name);
-      $self->reconnect
-    };
+    $self->{reconnect_cb} = sub { $self->reconnect };
     $self->reg_cb(registered => sub { $self->join_channels });
     $self->reg_cb(registered => sub { delete $self->{reconnect_timer} });
     $self->reg_cb(disconnect => $self->{reconnect_cb});
@@ -53,6 +50,7 @@ package Fuhbot::IRC 0.1 {
   }
 
   sub reconnect ($self) {
+    Fuhbot::Log::info("IRC reconnecting to " . $self->name);
     $self->{reconnect_timer} = AE::timer 5, 0, sub {
       $self->connect;
     }
