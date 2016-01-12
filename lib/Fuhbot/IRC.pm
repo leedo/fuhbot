@@ -4,6 +4,7 @@ use experimental 'signatures';
 {
   use AnyEvent::IRC::Connection;
   use AnyEvent::IRC::Util qw/parse_irc_msg/;
+  use Fuhbot::Log;
   use Encode;
   no warnings;
 
@@ -35,13 +36,17 @@ package Fuhbot::IRC 0.1 {
   sub setup_events ($self) {
     my $self = shift;
     $self->ctcp_auto_reply ('VERSION', ['VERSION', 'irssi v0.8.15']);
-    $self->{reconnect_cb} = sub {$self->reconnect};
+    $self->{reconnect_cb} = sub {
+      Fuhbot::Log::info("IRC reconnecting to " . $self->name);
+      $self->reconnect
+    };
     $self->reg_cb(registered => sub { $self->join_channels });
     $self->reg_cb(registered => sub { delete $self->{reconnect_timer} });
     $self->reg_cb(disconnect => $self->{reconnect_cb});
   }
 
   sub shutdown ($self, $cb) {
+    Fuhbot::Log::info("IRC shutting down " . $self->name);
     $self->unreg_cb($self->{reconnect_cb});
     $self->reg_cb(disconnect => $cb);
     $self->send_srv(QUIT => "fuhbot");
@@ -64,8 +69,9 @@ package Fuhbot::IRC 0.1 {
   }
 
   sub connect ($self) {
+    Fuhbot::Log::info("IRC connecting to " . $self->name);
     $self->enable_ssl if $self->config("ssl");
-    $self->disconnect;
+    $self->disconnect if $self->is_connected;
 
     $self->SUPER::connect(
       $self->config("host"),
@@ -78,6 +84,7 @@ package Fuhbot::IRC 0.1 {
   }
 
   sub join_channels ($self) {
+    Fuhbot::Log::info("IRC connected to " . $self->name);
     for my $channel (@{$self->config("channels")}) {
       $self->send_srv(JOIN => split /\s+/, $channel);
     }
