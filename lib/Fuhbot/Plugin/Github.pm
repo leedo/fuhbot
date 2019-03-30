@@ -40,7 +40,7 @@ package Fuhbot::Plugin::Github 0.1 {
 
   on post "/github" => sub ($self, $req) {
     $req->respond({ content => ["text/plain", "o ok"] });
-    my $payload = $req->parm("payload");
+    my $payload = $req->content;
 
     if ($payload) {
       my $data = decode_json $payload;
@@ -59,7 +59,7 @@ package Fuhbot::Plugin::Github 0.1 {
       }
 
       for my $commit (@commits) {
-        next unless defined $commit;
+        next unless defined $commit && $commit->{message};
         http_post "http://git.io",
           "url=$commit->{url}",
           sub ($body, $headers) {
